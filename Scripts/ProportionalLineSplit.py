@@ -2,7 +2,7 @@
 # Purpose: Take a feature class and proportionally split each unique feature line into equal length segments. Similar
 # to editing tools done manually.This version of the tool will join the original fields of the old feature class.
 # Author: David Wasserman
-# Last Modified: 12/23/2015
+# Last Modified: 2/13/2016
 # Copyright: David Wasserman
 # Python Version:   2.7
 # --------------------------------
@@ -22,7 +22,7 @@
 # --------------------------------
 # Import Modules
 import os, arcpy
-
+from functools import wraps
 # Define Inputs
 FeatureClass = arcpy.GetParameterAsText(0)
 Desired_Feature_Count = arcpy.GetParameter(1)
@@ -31,6 +31,61 @@ OutFeatureClass = arcpy.GetParameterAsText(3)
 
 
 # Function Definitions
+def funcReport(function=None,reportBool=False):
+    """This decorator function is designed to be used as a wrapper with other functions to enable basic try and except
+     reporting (if function fails it will report the name of the function that failed and its arguments. If a report
+      boolean is true the function will report inputs and outputs of a function."""
+    def funcReport_Decorator(function):
+        def funcWrapper(*args, **kwargs):
+            try:
+                funcResult = function(*args, **kwargs)
+                if reportBool:
+                    print("Function:{0}".format(str(function.__name__)))
+                    print("     Input(s):{0}".format(str(args)))
+                    print("     Ouput(s):{0}".format(str(funcResult)))
+                return funcResult
+            except Exception as e:
+                print("{0} - function failed -|- Function arguments were:{1}.".format(str(function.__name__), str(args)))
+                print(e.args[0])
+        return funcWrapper
+    if not function:  # User passed in a bool argument
+        def waiting_for_function(function):
+            return funcReport_Decorator(function)
+        return waiting_for_function
+    else:
+        return funcReport_Decorator(function)
+
+
+def arcToolReport(function=None, arcToolMessageBool=False, arcProgressorBool=False):
+    """This decorator function is designed to be used as a wrapper with other GIS functions to enable basic try and except
+     reporting (if function fails it will report the name of the function that failed and its arguments. If a report
+      boolean is true the function will report inputs and outputs of a function."""
+    def arcToolReport_Decorator(function):
+        def funcWrapper(*args, **kwargs):
+            try:
+                funcResult = function(*args, **kwargs)
+                if arcToolMessageBool:
+                    arcpy.AddMessage("Function:{0}".format(str(function.__name__)))
+                    arcpy.AddMessage("     Input(s):{0}".format(str(args)))
+                    arcpy.AddMessage("     Ouput(s):{0}".format(str(funcResult)))
+                if arcProgressorBool:
+                    arcpy.SetProgressorLabel("Function:{0}".format(str(function.__name__)))
+                    arcpy.SetProgressorLabel("     Input(s):{0}".format(str(args)))
+                    arcpy.SetProgressorLabel("     Ouput(s):{0}".format(str(funcResult)))
+                return funcResult
+            except Exception as e:
+                arcpy.AddMessage(
+                    "{0} - function failed -|- Function arguments were:{1}.".format(str(function.__name__), str(args)))
+                print("{0} - function failed -|- Function arguments were:{1}.".format(str(function.__name__), str(args)))
+                print(e.args[0])
+        return funcWrapper
+    if not function:  # User passed in a bool argument
+        def waiting_for_function(function):
+            return  arcToolReport_Decorator(function)
+        return waiting_for_function
+    else:
+        return arcToolReport_Decorator(function)
+
 def arcPrint(string, progressor_Bool=False):
     try:
         if progressor_Bool:
@@ -47,7 +102,6 @@ def arcPrint(string, progressor_Bool=False):
         arcpy.AddMessage("Could not create message, bad arguments.")
         pass
 
-
 def copyAlteredRow(row, fieldList, replacementDict):
     try:
         newRow = []
@@ -60,17 +114,18 @@ def copyAlteredRow(row, fieldList, replacementDict):
                     newRow.append(row[getFIndex(fieldList, field)])
             except:
                 arcPrint("Could not replace field {0} with its accepted value. Check field names for match.".format(
-                    str(field)), True)
+                        str(field)), True)
                 newRow.append(None)  # Append a null value where it cannot find a value to the list.
         return newRow
     except:
-        arcPrint("Could not get row fields for the following input {0}, returned an empty list.".format(str(row)), True)
+        arcPrint("Could not get row fields for the following input {0}, returned an empty list.".format(str(row)),
+                 True)
         arcpy.AddWarning(
-            "Could not get row fields for the following input {0}, returned an empty list.".format(str(row)))
+                "Could not get row fields for the following input {0}, returned an empty list.".format(str(row)))
         newRow = []
         return newRow
 
-
+@arcToolReport
 def lineLength(row, Field, constantLen, fNames):
     # returns the appropriate value type  based on the options selected: retrieved form field or uses a constant
     if Field and Field != "#":
@@ -89,10 +144,13 @@ def getFields(featureClass, excludedTolkens=["OID", "Geometry"], excludedFields=
         arcPrint("The field list for {0} is:{1}".format(str(fcName), str(field_list)), True)
         return field_list
     except:
-        arcPrint("Could not get fields for the following input {0}, returned an empty list.".format(str(featureClass)),
-                 True)
+        arcPrint(
+                "Could not get fields for the following input {0}, returned an empty list.".format(
+                        str(featureClass)),
+                True)
         arcpy.AddWarning(
-            "Could not get fields for the following input {0}, returned an empty list.".format(str(featureClass)))
+                "Could not get fields for the following input {0}, returned an empty list.".format(
+                        str(featureClass)))
         field_list = []
         return field_list
 
@@ -100,14 +158,15 @@ def getFields(featureClass, excludedTolkens=["OID", "Geometry"], excludedFields=
 def getFIndex(field_names, field_name):
     try:  # Assumes string will match if all the field names are made lower case.
         return [str(i).lower() for i in field_names].index(str(field_name).lower())
-        # Make iter items lower case to get right time field index.
+    # Make iter items lower case to get right time field index.
     except:
         print("Couldn't retrieve index for {0}, check arguments.".format(str(field_name)))
         return None
 
+
 def do_analysis(in_fc, out_count_value, out_count_field, Out_FC):
-    #This function will split each feature in a feature class into a desired number of equal length segments
-    #based on an out count value or field.
+    # This function will split each feature in a feature class into a desired number of equal length segments
+    # based on an out count value or field.
     try:
         arcpy.env.overwriteOutput = True
         OutWorkspace = os.path.split(Out_FC)[0]
@@ -125,10 +184,13 @@ def do_analysis(in_fc, out_count_value, out_count_field, Out_FC):
                     lineCounter += 1
                     linegeo = singleline[getFIndex(fields, "SHAPE@")]
                     # Incoming num is rounded, a minimum of 1 is chosen, and then it is inted to prep for range/seg
-                    out_count = int(round(max([1, lineLength(singleline, out_count_field, out_count_value, fields)])))
-                    arcPrint("On feature iteration {0}, the desired number of segments is {1}.".format(str(lineCounter),
-                                                                                                       str(out_count)),
-                             True)
+                    out_count = int(
+                            round(max([1, lineLength(singleline, out_count_field, out_count_value, fields)])))
+                    arcPrint(
+                            "On feature iteration {0}, the desired number of segments is {1}.".format(
+                                    str(lineCounter),
+                                    str(out_count)),
+                            True)
                     for elinesegindex in range(0, out_count):
                         try:
                             seg = linegeo.segmentAlongLine((elinesegindex / float(out_count)),
@@ -146,17 +208,19 @@ def do_analysis(in_fc, out_count_value, out_count_field, Out_FC):
                     arcPrint("Iterated through and split feature " + str(lineCounter) + ".", True)
                 except:
                     arcPrint("Failed to iterate through feature " + str(lineCounter) + ".", True)
-            del cursor, insertCursor,fields,preFields, OutWorkspace,lineCounter
-            arcPrint ("Script Completed Successfully.",True)
+            del cursor, insertCursor, fields, preFields, OutWorkspace, lineCounter
+            arcPrint("Script Completed Successfully.", True)
 
     except arcpy.ExecuteError:
         arcpy.GetMessages(2)
     except Exception as e:
         print e.args[0]
 
+    # End do_analysis function
 
-# End do_analysis function
-
-
-# Main Script
-do_analysis(FeatureClass, Desired_Feature_Count, Feature_Count_Field, OutFeatureClass)
+# This test allows the script to be used from the operating
+# system command prompt (stand-alone), in a Python IDE,
+# as a geoprocessing script tool, or as a module imported in
+# another script
+if __name__ == '__main__':
+    do_analysis(FeatureClass, Desired_Feature_Count, Feature_Count_Field, OutFeatureClass)

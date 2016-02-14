@@ -25,8 +25,10 @@ import os, arcpy
 
 # Define Inputs
 FeatureClass = arcpy.GetParameterAsText(0)
-Desired_Feature_Count =  arcpy.GetParameter(1)
+Desired_Feature_Count = arcpy.GetParameter(1)
 OutFeatureClass = arcpy.GetParameterAsText(2)
+
+
 # Function Definitions
 
 def arcPrint(string, progressor_Bool=False):
@@ -49,7 +51,7 @@ def arcPrint(string, progressor_Bool=False):
 def do_analysis(in_fc, out_count, Out_FC):
     """TODO: Add documentation about this function here"""
     try:
-        arcpy.env.overwriteOutput=True
+        arcpy.env.overwriteOutput = True
         OutWorkspace = os.path.split(in_fc)[0]
         FileName = os.path.split(in_fc)[1]
         fields = ["SHAPE@" if f.type == "Geometry" else f.name for f in arcpy.ListFields(in_fc)]
@@ -58,7 +60,7 @@ def do_analysis(in_fc, out_count, Out_FC):
         spatialRef = desc.spatialReference
         arcPrint("Established cursor for " + str(FileName) + ".", True)
         lineCounter = 0
-        allSegmentsList=[]
+        allSegmentsList = []
         for singleline in cursor:
             try:
                 segmentList = []
@@ -68,12 +70,12 @@ def do_analysis(in_fc, out_count, Out_FC):
                     try:
                         seg = linegeo.segmentAlongLine((elinesegindex / float(out_count)),
                                                        ((elinesegindex + 1) / float(out_count)), True)
-                        segID=elinesegindex+1
+                        segID = elinesegindex + 1
                         segmentList.append(seg)
                     except:
                         arcPrint("Could not iterate through line segment " + str(segID) + ".")
                         break
-                if len(segmentList)==out_count:
+                if len(segmentList) == out_count:
                     allSegmentsList.extend(segmentList)
                 pass
                 arcPrint("Iterated through feature " + str(lineCounter) + ".", True)
@@ -85,19 +87,21 @@ def do_analysis(in_fc, out_count, Out_FC):
         except:
             arcPrint("Could not copy features.")
         try:
-            LineFName="Line_Number"
-            SegFName="Seg_Number"
-            arcpy.AddField_management(Out_FC,LineFName,"LONG",field_alias="Est. Orig Line Number")
-            arcpy.AddField_management(Out_FC,SegFName,"LONG",field_alias="Est. Seg ID")
-            arcpy.CalculateField_management(Out_FC,LineFName,"((!OBJECTID!-1)/"+str(out_count)+")+1","PYTHON_9.3")
-            segCodeBlock="""def SegNumCalc(ObID,Num):
+            LineFName = "Line_Number"
+            SegFName = "Seg_Number"
+            arcpy.AddField_management(Out_FC, LineFName, "LONG", field_alias="Est. Orig Line Number")
+            arcpy.AddField_management(Out_FC, SegFName, "LONG", field_alias="Est. Seg ID")
+            arcpy.CalculateField_management(Out_FC, LineFName, "((!OBJECTID!-1)/" + str(out_count) + ")+1",
+                                            "PYTHON_9.3")
+            segCodeBlock = """def SegNumCalc(ObID,Num):
               if ObID%Num==0:
                 return Num
               else:
                 return ObID%Num"""
 
-            arcpy.CalculateField_management(Out_FC,SegFName,"SegNumCalc(!OBJECTID!,"+str(out_count)+")","PYTHON_9.3",segCodeBlock)
-            arcPrint("Succeeded in adding estimated ID Fields.",True)
+            arcpy.CalculateField_management(Out_FC, SegFName, "SegNumCalc(!OBJECTID!," + str(out_count) + ")",
+                                            "PYTHON_9.3", segCodeBlock)
+            arcPrint("Succeeded in adding estimated ID Fields.", True)
         except:
             arcPrint("Could not add and calculate estimated ID Fields")
             pass

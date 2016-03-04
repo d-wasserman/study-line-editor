@@ -34,7 +34,7 @@ OutFeatureClass = arcpy.GetParameterAsText(3)
 def funcReport(function=None,reportBool=False):
     """This decorator function is designed to be used as a wrapper with other functions to enable basic try and except
      reporting (if function fails it will report the name of the function that failed and its arguments. If a report
-      boolean is true the function will report inputs and outputs of a function."""
+      boolean is true the function will report inputs and outputs of a function.-David Wasserman"""
     def funcReport_Decorator(function):
         def funcWrapper(*args, **kwargs):
             try:
@@ -59,7 +59,7 @@ def funcReport(function=None,reportBool=False):
 def arcToolReport(function=None, arcToolMessageBool=False, arcProgressorBool=False):
     """This decorator function is designed to be used as a wrapper with other GIS functions to enable basic try and except
      reporting (if function fails it will report the name of the function that failed and its arguments. If a report
-      boolean is true the function will report inputs and outputs of a function."""
+      boolean is true the function will report inputs and outputs of a function.-David Wasserman"""
     def arcToolReport_Decorator(function):
         def funcWrapper(*args, **kwargs):
             try:

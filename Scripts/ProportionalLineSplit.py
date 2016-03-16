@@ -2,7 +2,7 @@
 # Purpose: Take a feature class and proportionally split each unique feature line into equal length segments. Similar
 # to editing tools done manually.This version of the tool will join the original fields of the old feature class.
 # Author: David Wasserman
-# Last Modified: 2/13/2016
+# Last Modified: 3/15/2016
 # Copyright: David Wasserman
 # Python Version:   2.7
 # --------------------------------
@@ -22,7 +22,6 @@
 # --------------------------------
 # Import Modules
 import os, arcpy
-from functools import wraps
 # Define Inputs
 FeatureClass = arcpy.GetParameterAsText(0)
 Desired_Feature_Count = arcpy.GetParameter(1)
@@ -126,13 +125,15 @@ def copyAlteredRow(row, fieldList, replacementDict):
         return newRow
 
 @arcToolReport
-def lineLength(row, Field, constantLen, fNames):
+def lineLength(row, Field, constantLen, fNames,printBool=False):
     # returns the appropriate value type  based on the options selected: retrieved form field or uses a constant
     if Field and Field != "#":
-        arcPrint("Using size field to create output geometries.", True)
+        if printBool:
+            arcPrint("Using size field to create output geometries.", True)
         return abs(row[getFIndex(fNames, Field)])
     else:
-        arcPrint("Using size input value to create same sized output geometries.", True)
+        if printBool:
+            arcPrint("Using size input value to create same sized output geometries.", True)
         return abs(constantLen)
 
 
@@ -165,8 +166,8 @@ def getFIndex(field_names, field_name):
 
 
 def do_analysis(in_fc, out_count_value, out_count_field, Out_FC):
-    # This function will split each feature in a feature class into a desired number of equal length segments
-    # based on an out count value or field.
+    """ This function will split each feature in a feature class into a desired number of equal length segments
+     based on an out count value or field."""
     try:
         arcpy.env.overwriteOutput = True
         OutWorkspace = os.path.split(Out_FC)[0]
@@ -186,11 +187,6 @@ def do_analysis(in_fc, out_count_value, out_count_field, Out_FC):
                     # Incoming num is rounded, a minimum of 1 is chosen, and then it is inted to prep for range/seg
                     out_count = int(
                             round(max([1, lineLength(singleline, out_count_field, out_count_value, fields)])))
-                    arcPrint(
-                            "On feature iteration {0}, the desired number of segments is {1}.".format(
-                                    str(lineCounter),
-                                    str(out_count)),
-                            True)
                     for elinesegindex in range(0, out_count):
                         try:
                             seg = linegeo.segmentAlongLine((elinesegindex / float(out_count)),
@@ -205,16 +201,16 @@ def do_analysis(in_fc, out_count_value, out_count_field, Out_FC):
                         for row in segmentList:
                             insertCursor.insertRow(row)
                     pass
-                    arcPrint("Iterated through and split feature " + str(lineCounter) + ".", True)
+                    arcPrint("Iterated through and split feature " + str(lineCounter) +".", True)
                 except:
-                    arcPrint("Failed to iterate through feature " + str(lineCounter) + ".", True)
+                    arcPrint("Failed to iterate through and a split feature " + str(lineCounter) + ".", True)
             del cursor, insertCursor, fields, preFields, OutWorkspace, lineCounter
             arcPrint("Script Completed Successfully.", True)
 
     except arcpy.ExecuteError:
-        arcpy.GetMessages(2)
+        print(arcpy.GetMessages(2))
     except Exception as e:
-        print e.args[0]
+        print(e.args[0])
 
     # End do_analysis function
 

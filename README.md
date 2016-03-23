@@ -9,3 +9,5 @@ The goal of this script was to split target line features into (such as routes o
 Aid in the creation of study segments to summarize data on for networks.
 Aid in the creation of animations for routes by allowing the creation equal length converging line segments whose ends can be converted to points.
 Provide a tool for batch editing and segmentation of polylines.
+
+Works in ArcGIS Pro (2to3 compatible)

@@ -85,21 +85,18 @@ def arcToolReport(function=None, arcToolMessageBool=False, arcProgressorBool=Fal
     else:
         return arcToolReport_Decorator(function)
 
+@arcToolReport
 def arcPrint(string, progressor_Bool=False):
-    try:
-        if progressor_Bool:
-            arcpy.SetProgressorLabel(string)
-            arcpy.AddMessage(string)
-            print(string)
-        else:
-            arcpy.AddMessage(string)
-            print(string)
-    except arcpy.ExecuteError:
-        arcpy.GetMessages(2)
-        pass
-    except:
-        arcpy.AddMessage("Could not create message, bad arguments.")
-        pass
+    """ This function is used to simplify using arcpy reporting for tool creation,if progressor bool is true it will
+    create a tool label."""
+    casted_string = str(string)
+    if progressor_Bool:
+        arcpy.SetProgressorLabel(casted_string)
+        arcpy.AddMessage(casted_string)
+        print(casted_string)
+    else:
+        arcpy.AddMessage(casted_string)
+        print(casted_string)
 
 def copyAlteredRow(row, fieldList, replacementDict):
     try:
@@ -156,13 +153,11 @@ def getFields(featureClass, excludedTolkens=["OID", "Geometry"], excludedFields=
         return field_list
 
 
+@arcToolReport
 def getFIndex(field_names, field_name):
-    try:  # Assumes string will match if all the field names are made lower case.
-        return [str(i).lower() for i in field_names].index(str(field_name).lower())
-    # Make iter items lower case to get right time field index.
-    except:
-        print("Couldn't retrieve index for {0}, check arguments.".format(str(field_name)))
-        return None
+    """Retrieves an index of a list of string field names to be used with data access cursors in arcpy.
+    Assumes string will match if all the field names are made lower case."""
+    return [str(i).lower() for i in field_names].index(str(field_name).lower())
 
 
 def do_analysis(in_fc, out_count_value, out_count_field, Out_FC):

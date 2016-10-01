@@ -160,7 +160,7 @@ def getFIndex(field_names, field_name):
     return [str(i).lower() for i in field_names].index(str(field_name).lower())
 
 
-def do_analysis(in_fc, out_count_value, out_count_field, Out_FC):
+def proportional_line_split(in_fc, out_count_value, out_count_field, Out_FC):
     """ This function will split each feature in a feature class into a desired number of equal length segments
      based on an out count value or field."""
     try:
@@ -196,7 +196,8 @@ def do_analysis(in_fc, out_count_value, out_count_field, Out_FC):
                         for row in segmentList:
                             insertCursor.insertRow(row)
                     pass
-                    arcPrint("Iterated through and split feature " + str(lineCounter) +".", True)
+                    if lineCounter%100==0:
+                        arcPrint("Iterated through and split feature " + str(lineCounter) +".", True)
                 except:
                     arcPrint("Failed to iterate through and a split feature " + str(lineCounter) + ".", True)
             del cursor, insertCursor, fields, preFields, OutWorkspace, lineCounter
@@ -214,4 +215,4 @@ def do_analysis(in_fc, out_count_value, out_count_field, Out_FC):
 # as a geoprocessing script tool, or as a module imported in
 # another script
 if __name__ == '__main__':
-    do_analysis(FeatureClass, Desired_Feature_Count, Feature_Count_Field, OutFeatureClass)
+    proportional_line_split(FeatureClass, Desired_Feature_Count, Feature_Count_Field, OutFeatureClass)

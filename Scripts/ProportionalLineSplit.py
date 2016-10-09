@@ -2,7 +2,7 @@
 # Purpose: Take a feature class and proportionally split each unique feature line into equal length segments. Similar
 # to editing tools done manually.This version of the tool will join the original fields of the old feature class.
 # Author: David Wasserman
-# Last Modified: 3/15/2016
+# Last Modified: 10/9/2016
 # Copyright: David Wasserman
 # Python Version:   2.7
 # --------------------------------
@@ -134,8 +134,14 @@ def lineLength(row, Field, constantLen, fNames,printBool=False):
         return abs(constantLen)
 
 def getFields(featureClass, excludedTolkens=["OID", "Geometry"], excludedFields=["shape_area", "shape_length"]):
+    """Get all field names from an incoming feature class defaulting to excluding tolkens and shape area & length.
+    Inputs: Feature class, excluding tokens list, excluded fields list.
+    Outputs: List of field names from input feature class. """
     try:
-        fcName = os.path.split(featureClass)[1]
+        try: # If  A feature Class split to game name
+            fcName = os.path.split(featureClass)[1]
+        except: # If a Feature Layer, just print the Layer Name
+            fcName = featureClass
         field_list = [f.name for f in arcpy.ListFields(featureClass) if f.type not in excludedTolkens
                       and f.name.lower() not in excludedFields]
         arcPrint("The field list for {0} is:{1}".format(str(fcName), str(field_list)), True)

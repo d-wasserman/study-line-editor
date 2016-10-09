@@ -123,8 +123,8 @@ def copyAlteredRow(row, fieldList, replacementDict):
 
 @arcToolReport
 def lineLength(row, Field, constantLen, fNames,printBool=False):
-    # returns the appropriate value type  based on the options selected: retrieved form field or uses a constant
-    if Field and Field != "#":
+    """Returns the appropriate value type  based on the options selected: retrieved form field or uses a constant"""
+    if Field in fNames and Field and Field != "#":
         if printBool:
             arcPrint("Using size field to create output geometries.", True)
         return abs(row[getFIndex(fNames, Field)])
@@ -132,7 +132,6 @@ def lineLength(row, Field, constantLen, fNames,printBool=False):
         if printBool:
             arcPrint("Using size input value to create same sized output geometries.", True)
         return abs(constantLen)
-
 
 def getFields(featureClass, excludedTolkens=["OID", "Geometry"], excludedFields=["shape_area", "shape_length"]):
     try:
@@ -153,11 +152,14 @@ def getFields(featureClass, excludedTolkens=["OID", "Geometry"], excludedFields=
         return field_list
 
 
-@arcToolReport
 def getFIndex(field_names, field_name):
-    """Retrieves an index of a list of string field names to be used with data access cursors in arcpy.
+    """Will get the index for a  arcpy da.cursor based on a list of field names as an input.
     Assumes string will match if all the field names are made lower case."""
-    return [str(i).lower() for i in field_names].index(str(field_name).lower())
+    try:
+        return [str(i).lower() for i in field_names].index(str(field_name).lower())
+    except:
+        print("Couldn't retrieve index for {0}, check arguments.".format(str(field_name)))
+        return None
 
 
 def proportional_line_split(in_fc, out_count_value, out_count_field, Out_FC):

@@ -1,9 +1,9 @@
 # Name: FeatureLineSplit.py
 # Purpose: Take a feature class and proportionally split each unique feature line into segments of a target count
 # or target distance. Similar to editing tools done manually.This version of the tool will join the original fields
-# f the old feature class.
+# of the old feature class.
 # Author: David Wasserman
-# Last Modified: 2/12/2017
+# Last Modified: 6/7/2017
 # Copyright: David Wasserman
 # Python Version:   2.7
 # --------------------------------
@@ -203,7 +203,7 @@ def split_line_geometry(linegeometry, split_value, split_method="LENGTH", best_f
     else:
         segmentation_value = int(round(max([1, split_value])))
         if str(split_method).upper() == "LENGTH" and best_fit_bool:
-            segmentation_value = max(1,int(round(line_length / float(split_value))))
+            segmentation_value = int(round(line_length / float(split_value)))
         for elinesegindex in range(0, segmentation_value):
             seg = linegeometry.segmentAlongLine((elinesegindex / float(segmentation_value)),
                                                 ((elinesegindex + 1) / float(segmentation_value)), True)
@@ -245,7 +245,7 @@ def feature_line_split(in_fc, out_count_value, out_count_field, split_method, be
                     if len(segment_rows) == len(split_segment_list):  # Unload by feature so partial segments are not made.
                         for row in segment_rows:
                             insertCursor.insertRow(row)
-                    if lineCounter % 100 == 0:
+                    if lineCounter % 500 == 0:
                         arc_print("Iterated through and split feature " + str(lineCounter) + ".", True)
                 except Exception as e:
                     arc_print("Failed to iterate through and a split feature " + str(lineCounter) + ".", True)

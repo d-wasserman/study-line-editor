@@ -74,7 +74,7 @@ Works in ArcGIS Pro (2to3 compatible)
 
 <b>Summary</b>
  
-This scripting tool will take an input feature line, and remove a target amount of length from the ends of thelines (pulling them back). Each line feature will be split into the number of segments specified. This version ofthe script will carry over any of the fields of the original feature class using cursors, it will only return pulled back geometries in the new feature class. 
+This scripting tool will take an input feature line, and remove a target amount of length from the ends of thelines (pulling them back). Each line feature will be copied once. This version ofthe script will carry over any of the fields of the original feature class using cursors, it will only return pulled back geometries in the new feature class. 
 
 <b>Usage</b>
  

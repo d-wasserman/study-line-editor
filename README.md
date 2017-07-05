@@ -78,7 +78,11 @@ Works in ArcGIS Pro (2to3 compatible)
 
 <b>Summary</b>
  
+<<<<<<< HEAD
 This scripting tool will take an input feature line, and remove a target amount of length from the ends of the lines (pulling them back).  Each line feature will be copied once. This version of the script will carry over any of the fields of the original feature class using cursors, it will only return pulled back geometries in the new feature class. 
+=======
+This scripting tool will take an input feature line, and remove a target amount of length from the ends of the lines (pulling them back). Each line feature will be copied once. This version of the script will carry over any of the fields of the original feature class using cursors, it will only return pulled back geometries in the new feature class. 
+>>>>>>> origin/master
 
 <b>Usage</b>
  

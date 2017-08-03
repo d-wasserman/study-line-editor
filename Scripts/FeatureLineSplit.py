@@ -24,20 +24,13 @@
 # Import Modules
 import os, arcpy, math
 
-# Define Inputs
-FeatureClass = arcpy.GetParameterAsText(0)
-Desired_Feature_Count = arcpy.GetParameter(1)
-Feature_Count_Field = arcpy.GetParameterAsText(2)
-Split_Method = arcpy.GetParameterAsText(3)
-Best_Fit_Bool = arcpy.GetParameter(4)
-OutFeatureClass = arcpy.GetParameterAsText(5)
-
 
 # Function Definitions
 def func_report(function=None, report_bool=False):
     """This decorator function is designed to be used as a wrapper with other functions to enable basic try and except
      reporting (if function fails it will report the name of the function that failed and its arguments. If a report
       boolean is true the function will report inputs and outputs of a function.-David Wasserman"""
+
     def func_report_decorator(function):
         def func_wrapper(*args, **kwargs):
             try:
@@ -49,7 +42,7 @@ def func_report(function=None, report_bool=False):
                 return func_result
             except Exception as e:
                 print(
-                "{0} - function failed -|- Function arguments were:{1}.".format(str(function.__name__), str(args)))
+                    "{0} - function failed -|- Function arguments were:{1}.".format(str(function.__name__), str(args)))
                 print(e.args[0])
 
         return func_wrapper
@@ -67,6 +60,7 @@ def arc_tool_report(function=None, arc_tool_message_bool=False, arc_progressor_b
     """This decorator function is designed to be used as a wrapper with other GIS functions to enable basic try and except
      reporting (if function fails it will report the name of the function that failed and its arguments. If a report
       boolean is true the function will report inputs and outputs of a function.-David Wasserman"""
+
     def arc_tool_report_decorator(function):
         def func_wrapper(*args, **kwargs):
             try:
@@ -82,15 +76,18 @@ def arc_tool_report(function=None, arc_tool_message_bool=False, arc_progressor_b
                 return func_result
             except Exception as e:
                 arcpy.AddMessage(
-                        "{0} - function failed -|- Function arguments were:{1}.".format(str(function.__name__),
-                                                                                        str(args)))
+                    "{0} - function failed -|- Function arguments were:{1}.".format(str(function.__name__),
+                                                                                    str(args)))
                 print(
-                "{0} - function failed -|- Function arguments were:{1}.".format(str(function.__name__), str(args)))
+                    "{0} - function failed -|- Function arguments were:{1}.".format(str(function.__name__), str(args)))
                 print(e.args[0])
+
         return func_wrapper
+
     if not function:  # User passed in a bool argument
         def waiting_for_function(function):
             return arc_tool_report_decorator(function)
+
         return waiting_for_function
     else:
         return arc_tool_report_decorator(function)
@@ -124,14 +121,14 @@ def copy_altered_row(row, fieldList, replacementDict):
                     newRow.append(row[get_f_index(fieldList, field)])
             except:
                 arc_print("Could not replace field {0} with its accepted value. Check field names for match.".format(
-                        str(field)), True)
+                    str(field)), True)
                 newRow.append(None)  # Append a null value where it cannot find a value to the list.
         return newRow
     except:
         arc_print("Could not get row fields for the following input {0}, returned an empty list.".format(str(row)),
                   True)
         arcpy.AddWarning(
-                "Could not get row fields for the following input {0}, returned an empty list.".format(str(row)))
+            "Could not get row fields for the following input {0}, returned an empty list.".format(str(row)))
         newRow = []
         return newRow
 
@@ -164,12 +161,12 @@ def get_fields(featureClass, excludedTolkens=["OID", "Geometry"], excludedFields
         return field_list
     except:
         arc_print(
-                "Could not get fields for the following input {0}, returned an empty list.".format(
-                        str(featureClass)),
-                True)
+            "Could not get fields for the following input {0}, returned an empty list.".format(
+                str(featureClass)),
+            True)
         arcpy.AddWarning(
-                "Could not get fields for the following input {0}, returned an empty list.".format(
-                        str(featureClass)))
+            "Could not get fields for the following input {0}, returned an empty list.".format(
+                str(featureClass)))
         field_list = []
         return field_list
 
@@ -182,6 +179,7 @@ def get_f_index(field_names, field_name):
     except:
         print("Couldn't retrieve index for {0}, check arguments.".format(str(field_name)))
         return None
+
 
 @arc_tool_report
 def split_line_geometry(linegeometry, split_value, split_method="LENGTH", best_fit_bool=True):
@@ -218,7 +216,8 @@ def feature_line_split(in_fc, out_count_value, out_count_field, split_method, be
         arcpy.env.overwriteOutput = True
         OutWorkspace = os.path.split(Out_FC)[0]
         FileName = os.path.split(Out_FC)[1]
-        arcpy.CreateFeatureclass_management(OutWorkspace, FileName, "POLYLINE", in_fc, spatial_reference=in_fc)
+        arcpy.CreateFeatureclass_management(OutWorkspace, FileName, "POLYLINE", in_fc, spatial_reference=in_fc,
+                                            has_m="SAME_AS_TEMPLATE", has_z="SAME_AS_TEMPLATE")
         preFields = get_fields(in_fc)
         fields = ["SHAPE@"] + preFields
         cursor = arcpy.da.SearchCursor(in_fc, fields)
@@ -232,8 +231,9 @@ def feature_line_split(in_fc, out_count_value, out_count_field, split_method, be
                     linegeo = singleline[get_f_index(fields, "SHAPE@")]
                     # Function splits linegeometry based on method and split value
                     split_segment_list = split_line_geometry(linegeo,
-                                                             line_length(singleline, out_count_field, out_count_value, fields), split_method, best_fit_bool)
-                    segID=0
+                                                             line_length(singleline, out_count_field, out_count_value,
+                                                                         fields), split_method, best_fit_bool)
+                    segID = 0
                     for segment in split_segment_list:
                         try:
                             segID += 1
@@ -242,7 +242,8 @@ def feature_line_split(in_fc, out_count_value, out_count_field, split_method, be
                         except:
                             arc_print("Could not iterate through line segment " + str(segID) + ".")
                             break
-                    if len(segment_rows) == len(split_segment_list):  # Unload by feature so partial segments are not made.
+                    if len(segment_rows) == len(
+                            split_segment_list):  # Unload by feature so partial segments are not made.
                         for row in segment_rows:
                             insertCursor.insertRow(row)
                     if lineCounter % 500 == 0:
@@ -250,7 +251,7 @@ def feature_line_split(in_fc, out_count_value, out_count_field, split_method, be
                 except Exception as e:
                     arc_print("Failed to iterate through and a split feature " + str(lineCounter) + ".", True)
                     arc_print(e.args[0])
-            del cursor, insertCursor, fields, preFields, OutWorkspace, lineCounter,split_segment_list
+            del cursor, insertCursor, fields, preFields, OutWorkspace, lineCounter, split_segment_list
             arc_print("Script Completed Successfully.", True)
     except arcpy.ExecuteError:
         arc_print(arcpy.GetMessages(2))
@@ -265,5 +266,12 @@ def feature_line_split(in_fc, out_count_value, out_count_field, split_method, be
 # as a geoprocessing script tool, or as a module imported in
 # another script
 if __name__ == '__main__':
+    # Define Inputs
+    FeatureClass = arcpy.GetParameterAsText(0)
+    Desired_Feature_Count = arcpy.GetParameter(1)
+    Feature_Count_Field = arcpy.GetParameterAsText(2)
+    Split_Method = arcpy.GetParameterAsText(3)
+    Best_Fit_Bool = arcpy.GetParameter(4)
+    OutFeatureClass = arcpy.GetParameterAsText(5)
     feature_line_split(FeatureClass, Desired_Feature_Count, Feature_Count_Field, Split_Method, Best_Fit_Bool,
                        OutFeatureClass)

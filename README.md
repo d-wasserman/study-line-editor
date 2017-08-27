@@ -1,5 +1,13 @@
 This repository holds a collection of easy to use ArcGIS Geoprocessing scripts  (10.3+ and Pro) intended for batch line editing. The tools are described below. 
 
+* Feature Line Split - create a new feature class that has input lines split into an arbitrary number of segments. 
+
+* Feature Line Pull - create a new feature class that has input lines split pulled back a target length. 
+
+* Feature Line Whiskers - create a new feature class that perpendicular lines generated based on the sampled headings of the input polylines. 
+
+In depth descriptions, are provided below. 
+
 # Feature Line Split
 
 <b>Summary</b>
@@ -78,10 +86,11 @@ Works in ArcGIS Pro (2to3 compatible)
 
 <b>Summary</b>
  
-
+<<<<<<< HEAD
 This scripting tool will take an input feature line, and remove a target amount of length from the ends of the lines (pulling them back).  Each line feature will be copied once. This version of the script will carry over any of the fields of the original feature class using cursors, it will only return pulled back geometries in the new feature class. 
-
+=======
 This scripting tool will take an input feature line, and remove a target amount of length from the ends of the lines (pulling them back). Each line feature will be copied once. This version of the script will carry over any of the fields of the original feature class using cursors, it will only return pulled back geometries in the new feature class. 
+>>>>>>> origin/master
 
 <b>Usage</b>
  
@@ -150,3 +159,70 @@ Works in ArcGIS Pro (2to3 compatible)
 </tr>
 </tbody>
 </table>
+
+# Feature Line Whiskers
+
+<b>Summary</b>
+ 
+This scripting tool is intended to assist with tasks related to createing intelligence related to  right of way widths from vector polygons such as building footprints (distance to frontage), road bed polygons, or sidewalk trace polygons found by remote sensing/computer vision/deep learning techniques. This tools main purpose is to create whiskers that are perpendicular to the line being used to create them. Once these whsikers are made, they can be trimmed by arbitrary polygons (feature to line), and then used to determine the widths of various features. This is a tool that is intended to generalize to many transportation/urban planning workflows.
+
+<b>Usage</b>
+ 
+The goal of this script was to create whiskers (like cat whiskers), that can be used to create lines that are perpendicular to an input sample line. The intended uses for this are:
+
+* Aid in determining right of way widths from roadbed polygons/sidewalk polygons. 
+
+* Determine the distance of a road from features perdicular to their centroids. 
+
+Works in ArcGIS Pro (2to3 compatible)
+
+<b>Parameters</b>
+
+<table width="100%" border="0" cellpadding="5">
+<tbody>
+<tr>
+<th width="30%">
+<b>Parameter</b>
+</th>
+<th width="50%">
+<b>Explanation</b>
+</th>
+<th width="20%">
+<b>Data Type</b>
+</th>
+</tr>
+<tr>
+<td class="info">Input_Feature_Line</td>
+<td class="info" align="left">
+<span style="font-weight: bold">Dialog Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><DIV><P><SPAN>This is the input feature class whose individual geometry features will be pulled back and put into a new feature class. The input can only be a polyline for this tool, because it uses Polyline specific methods. </SPAN></P></DIV></DIV></DIV><div class="noContent" style="text-align:center; margin-top: -1em">___________________</div><br />
+<span style="font-weight: bold">Python Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><DIV><P><SPAN>This tool depends on the segmentAlongLine method in ArcGIS 10.3.</SPAN></P></DIV></DIV></DIV></td>
+<td class="info" align="left">Feature Layer</td>
+</tr>
+<tr>
+<td class="info">Whisker_Width</td>
+<td class="info" align="left">
+<span style="font-weight: bold">Dialog Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><DIV><P><SPAN>This is the target width of the whisker that will be generated from the input polyline. If a field is chosen, this attribute is ignored. </SPAN></P></DIV></DIV></DIV><p><span class="noContent">There is no python reference for this parameter.</span></p></td>
+<td class="info" align="left">Long</td>
+</tr>
+<tr>
+<td class="info">Whisker_Field (Optional) </td>
+<td class="info" align="left">
+<span style="font-weight: bold">Dialog Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><P><SPAN>Allows you to choose a field that determines the width of the whisker generated on the target polylines. </SPAN></P></DIV></DIV><p><span class="noContent">There is no python reference for this parameter.</span></p></td>
+<td class="info" align="left">Field</td>
+</tr>
+<tr>
+<td class="info">Sample_Length</td>
+<td class="info" align="left">
+<span style="font-weight: bold">Dialog Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><P><SPAN>This is likely the most complex attribute to explain. If this is not set, or is zero, the heading from the line is determined by by the start and end points of the line. This attribute allows you to create a  new line that is near the center of the line that has a much smaller size. The sample line will not be seen, but this attribute determines the length sampled from the center of the line to determine heading. </SPAN></P></DIV></DIV><p><span class="noContent">There is no python reference for this parameter.</span></p></td>
+<td class="info" align="left">Double</td>
+</tr>
+<tr>
+<td class="info">Output_Feature_Line</td>
+<td class="info" align="left">
+<span style="font-weight: bold">Dialog Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><DIV><P><SPAN>This is the output polyline feature class that will be created by this tool. It should have the fields of the original feature class derived by an insert cursor. </SPAN></P></DIV></DIV></DIV><div class="noContent" style="text-align:center; margin-top: -1em">___________________</div><br />
+<span style="font-weight: bold">Python Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><DIV><P><SPAN>Whiskers should be perpendicular to the input line.</SPAN></P></DIV></DIV></DIV></td>
+<td class="info" align="left">Feature Class</td>
+</tr>
+</tbody>
+</table>
+

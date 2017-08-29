@@ -86,11 +86,8 @@ Works in ArcGIS Pro (2to3 compatible)
 
 <b>Summary</b>
  
-<<<<<<< HEAD
 This scripting tool will take an input feature line, and remove a target amount of length from the ends of the lines (pulling them back).  Each line feature will be copied once. This version of the script will carry over any of the fields of the original feature class using cursors, it will only return pulled back geometries in the new feature class. 
-=======
 This scripting tool will take an input feature line, and remove a target amount of length from the ends of the lines (pulling them back). Each line feature will be copied once. This version of the script will carry over any of the fields of the original feature class using cursors, it will only return pulled back geometries in the new feature class. 
->>>>>>> origin/master
 
 <b>Usage</b>
  
@@ -163,7 +160,7 @@ Works in ArcGIS Pro (2to3 compatible)
 # Feature Line Whiskers
 
 <b>Summary</b>
- 
+
 This scripting tool is intended to assist with tasks related to createing intelligence related to  right of way widths from vector polygons such as building footprints (distance to frontage), road bed polygons, or sidewalk trace polygons found by remote sensing/computer vision/deep learning techniques. This tools main purpose is to create whiskers that are perpendicular to the line being used to create them. Once these whsikers are made, they can be trimmed by arbitrary polygons (feature to line), and then used to determine the widths of various features. This is a tool that is intended to generalize to many transportation/urban planning workflows.
 
 <b>Usage</b>

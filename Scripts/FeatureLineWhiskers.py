@@ -248,7 +248,7 @@ def generate_whisker_from_polyline(linegeometry, whisker_width):
     segment_returned = None
     center = linegeometry.centroid
     sr=linegeometry.spatialReference
-    line_heading=get_line_heading(linegeometry,True)
+    line_heading=get_line_heading(linegeometry)
     perpendicular_angle_start,perpendicular_angle_end=get_angle_difference(line_heading)
     point_start=translate_point(center,perpendicular_angle_start,whisker_width)
     point_end= translate_point(center,perpendicular_angle_end,whisker_width)

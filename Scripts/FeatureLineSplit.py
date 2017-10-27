@@ -201,7 +201,7 @@ def split_line_geometry(linegeometry, split_value, split_method="LENGTH", best_f
     else:
         segmentation_value = int(round(max([1, split_value])))
         if str(split_method).upper() == "LENGTH" and best_fit_bool:
-            segmentation_value = int(round(line_length / float(split_value)))
+            segmentation_value = int(max([1,round(line_length / float(split_value))]))
         for elinesegindex in range(0, segmentation_value):
             seg = linegeometry.segmentAlongLine((elinesegindex / float(segmentation_value)),
                                                 ((elinesegindex + 1) / float(segmentation_value)), True)

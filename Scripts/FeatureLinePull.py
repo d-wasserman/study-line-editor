@@ -212,7 +212,7 @@ def feature_line_pull(in_fc, out_pull_value, out_pull_field, start_point_bool, e
         OutWorkspace = os.path.split(Out_FC)[0]
         FileName = os.path.split(Out_FC)[1]
         arcpy.CreateFeatureclass_management(OutWorkspace, FileName, "POLYLINE", in_fc, spatial_reference=in_fc,
-                                            has_m="SAME_AS_TEMPLATE",has_z="SAME_AS_TEMPLATE")
+                                            has_m="SAME_AS_TEMPLATE", has_z="SAME_AS_TEMPLATE")
         preFields = get_fields(in_fc)
         fields = ["SHAPE@"] + preFields
         cursor = arcpy.da.SearchCursor(in_fc, fields)

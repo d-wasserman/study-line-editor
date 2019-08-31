@@ -180,20 +180,22 @@ def get_f_index(field_names, field_name):
         print("Couldn't retrieve index for {0}, check arguments.".format(str(field_name)))
         return None
 
+
 @arc_tool_report
 def get_azimuth(angle):
     """Converts headings represented by angles in degrees  180 to -180to Azimuth Angles.
     Will also normalize any number to 0-360 """
-    if angle<=180 and angle>90:
-        azimuth_angles= 360.0-(angle-90)
+    if angle <= 180 and angle > 90:
+        azimuth_angles = 360.0 - (angle - 90)
     else:
-        azimuth_angles= abs(angle-90)
-    if abs(azimuth_angles)>360:
-        azimuth_angles%360
+        azimuth_angles = abs(angle - 90)
+    if abs(azimuth_angles) > 360:
+        azimuth_angles % 360
     return azimuth_angles
 
+
 @arc_tool_report
-def get_line_heading(polyline_obj,in_azimuth=False):
+def get_line_heading(polyline_obj, in_azimuth=False):
     """Takes in an ArcPolyline Object, and returns its heading based on its start and end point positions. """
     first_point = polyline_obj.firstPoint
     last_point = polyline_obj.lastPoint
@@ -209,37 +211,41 @@ def get_line_heading(polyline_obj,in_azimuth=False):
         angle = get_azimuth(angle)
     return angle
 
+
 @arc_tool_report
-def get_angle_difference(angle,difference=90):
+def get_angle_difference(angle, difference=90):
     """Given an azimuth angle (0-360), it will return the two azimuth angles (0-360) as a tuple that are perpendicular to it."""
-    angle_lower,angle_higher=(angle+difference)%360,(angle-difference)%360
+    angle_lower, angle_higher = (angle + difference) % 360, (angle - difference) % 360
 
-    return (angle_lower,angle_higher)
+    return (angle_lower, angle_higher)
+
 
 @arc_tool_report
-def translate_point(point,angle,radius,is_degree=True):
+def translate_point(point, angle, radius, is_degree=True):
     """Passed a point object (arcpy) this funciton will translate it and
      return a modified clone based on a given angle out a set radius."""
     if is_degree:
-        angle=math.radians(angle)
+        angle = math.radians(angle)
 
-    new_x= math.cos(angle)*radius+point.X
-    new_y= math.sin(angle)*radius+point.Y
-    new_point= arcpy.Point(new_x,new_y)
+    new_x = math.cos(angle) * radius + point.X
+    new_y = math.sin(angle) * radius + point.Y
+    new_point = arcpy.Point(new_x, new_y)
     return new_point
 
+
 @arc_tool_report
-def sample_line_from_center(polyline,length_to_sample):
+def sample_line_from_center(polyline, length_to_sample):
     """Takes a polyline and samples it a target length using the segmentAlongLine method."""
     line_length = float(polyline.length)
-    half_way_point= float(polyline.length)/2
-    start_point= half_way_point-length_to_sample/2
-    end_point = half_way_point+length_to_sample/2
-    if line_length <= length_to_sample/2:
-        start_point=0
-        end_point=line_length
-    segment_returned = polyline.segmentAlongLine(start_point,end_point)
+    half_way_point = float(polyline.length) / 2
+    start_point = half_way_point - length_to_sample / 2
+    end_point = half_way_point + length_to_sample / 2
+    if line_length <= length_to_sample / 2:
+        start_point = 0
+        end_point = line_length
+    segment_returned = polyline.segmentAlongLine(start_point, end_point)
     return segment_returned
+
 
 @arc_tool_report
 def generate_whisker_from_polyline(linegeometry, whisker_width):
@@ -247,14 +253,14 @@ def generate_whisker_from_polyline(linegeometry, whisker_width):
     lines centroid (or label point) that is perpendicular to the bearing of the current polyline. """
     segment_returned = None
     center = linegeometry.centroid
-    sr=linegeometry.spatialReference
-    line_heading=get_line_heading(linegeometry)
-    perpendicular_angle_start,perpendicular_angle_end=get_angle_difference(line_heading)
-    point_start=translate_point(center,perpendicular_angle_start,whisker_width)
-    point_end= translate_point(center,perpendicular_angle_end,whisker_width)
-    inputs_line = arcpy.Array([point_start,point_end])
-    segment_returned = arcpy.Polyline(inputs_line,sr)
-     # This function fails if the line is shorter than the pull value, in this case no geometry is returned.
+    sr = linegeometry.spatialReference
+    line_heading = get_line_heading(linegeometry)
+    perpendicular_angle_start, perpendicular_angle_end = get_angle_difference(line_heading)
+    point_start = translate_point(center, perpendicular_angle_start, whisker_width)
+    point_end = translate_point(center, perpendicular_angle_end, whisker_width)
+    inputs_line = arcpy.Array([point_start, point_end])
+    segment_returned = arcpy.Polyline(inputs_line, sr)
+    # This function fails if the line is shorter than the pull value, in this case no geometry is returned.
     return segment_returned
 
 
@@ -267,7 +273,7 @@ def feature_line_whisker(in_fc, out_whisker_width, out_whisker_field, sample_len
         OutWorkspace = os.path.split(Out_FC)[0]
         FileName = os.path.split(Out_FC)[1]
         arcpy.CreateFeatureclass_management(OutWorkspace, FileName, "POLYLINE", in_fc, spatial_reference=in_fc,
-                                            has_m="SAME_AS_TEMPLATE",has_z="SAME_AS_TEMPLATE")
+                                            has_m="SAME_AS_TEMPLATE", has_z="SAME_AS_TEMPLATE")
         preFields = get_fields(in_fc)
         fields = ["SHAPE@"] + preFields
         cursor = arcpy.da.SearchCursor(in_fc, fields)
@@ -300,7 +306,8 @@ def feature_line_whisker(in_fc, out_whisker_width, out_whisker_field, sample_len
                     if lineCounter % 500 == 0:
                         arc_print("Iterated and generated whiskers for feature " + str(lineCounter) + ".", True)
                 except Exception as e:
-                    arc_print("Failed to iterate through and generated whiskers for feature " + str(lineCounter) + ".", True)
+                    arc_print("Failed to iterate through and generated whiskers for feature " + str(lineCounter) + ".",
+                              True)
                     arc_print(e.args[0])
             del cursor, insertCursor, fields, preFields, OutWorkspace, lineCounter
             arc_print("Script Completed Successfully.", True)
@@ -323,5 +330,5 @@ if __name__ == '__main__':
     Feature_Whisker_Field = arcpy.GetParameterAsText(2)
     Line_Sample_Length = arcpy.GetParameterAsText(3)
     OutFeatureClass = arcpy.GetParameterAsText(4)
-    feature_line_whisker(FeatureClass, float(Desired_Whisker_Width),Feature_Whisker_Field,float(Line_Sample_Length),
-                      OutFeatureClass)
+    feature_line_whisker(FeatureClass, float(Desired_Whisker_Width), Feature_Whisker_Field, float(Line_Sample_Length),
+                         OutFeatureClass)

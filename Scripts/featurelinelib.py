@@ -252,7 +252,10 @@ def get_fields(featureClass, excludedTolkens=["OID", "Geometry"], excludedFields
 
 def get_f_index(field_names, field_name):
     """Will get the index for a  arcpy da.cursor based on a list of field names as an input.
-    Assumes string will match if all the field names are made lower case."""
+    Assumes string will match if all the field names are made lower case.
+    :param - list of field names to select index from
+    :param - field_name used to determine index
+    :returns - index value (int)"""
     try:
         return [str(i).lower() for i in field_names].index(str(field_name).lower())
     except:

@@ -186,81 +186,91 @@ def arc_unique_values(table, field, filter_falsy=False):
             return sorted({row[0] for row in cursor})
 
 
-def copy_altered_row(row, fieldList, replacementDict):
+def copy_altered_row(row, field_list, field_dict, replacement_dict):
     """This utility function copy a row with the listed fields, but if there is a key in the replacement dictionary
-    the item in that dictionary will replace the item that was originally in that row. Useful for cursor short hand."""
+    the item in that dictionary will replace the item that was originally in that row. Useful for cursor short hand.
+    :param - row - row of an input cursor
+    :param - field_list - list of field names
+    :param - field_dict - dictionary of fields and their indexes as values
+    :param - replacement_dict - the dictionary with values to replace the row values with"""
     try:
-        newRow = []
-        keyList = replacementDict.keys()
-        for field in fieldList:
+        new_row = []
+        keyList = replacement_dict.keys()
+        for field in field_list:
             try:
                 if field in keyList:
-                    newRow.append(replacementDict[field])
+                    new_row.append(replacement_dict[field])
                 else:
-                    newRow.append(row[get_f_index(fieldList, field)])
+                    new_row.append(row[field_dict[field]])
             except:
                 arc_print("Could not replace field {0} with its accepted value. Check field names for match.".format(
                     str(field)), True)
-                newRow.append(None)  # Append a null value where it cannot find a value to the list.
-        return newRow
+                new_row.append(None)  # Append a null value where it cannot find a value to the list.
+        return new_row
     except:
         arc_print("Could not get row fields for the following input {0}, returned an empty list.".format(str(row)),
                   True)
         arcpy.AddWarning(
             "Could not get row fields for the following input {0}, returned an empty list.".format(str(row)))
-        newRow = []
-        return newRow
+        new_row = []
+        return new_row
 
 
 @arc_tool_report
-def line_length(row, Field, constantLen, fNames, printBool=False):
-    """Returns the appropriate value type  based on the options selected: retrieved form field or uses a constant"""
-    if Field in fNames and Field and Field != "#":
-        if printBool:
+def line_length(row, field, constant_len, f_dict, print_bool=False):
+    """Returns the appropriate value type  based on the options selected: retrieved form field or uses a constant
+    :param - row - cursor row as a list
+    :param - field - field with geometry
+    :param - constant_len - len choice if constant
+    :param - f_dict - field dictionary of field name index pairs
+    :param - print_bool - print boolean
+    :return - int"""
+    if f_dict.get(field, None) and field and field != "#":
+        if print_bool:
             arc_print("Using size field to create output geometries.", True)
-        return abs(row[get_f_index(fNames, Field)])
+        return abs(row[f_dict[field]])
     else:
-        if printBool:
+        if print_bool:
             arc_print("Using size input value to create same sized output geometries.", True)
-        return abs(constantLen)
+        return abs(constant_len)
 
 
-def get_fields(featureClass, excludedTolkens=["OID", "Geometry"], excludedFields=["shape_area", "shape_length"]):
+def get_fields(feature_class, excluded_tolkens=["OID", "Geometry"], excluded_fields=["shape_area", "shape_length"]):
     """Get all field names from an incoming feature class defaulting to excluding tolkens and shape area & length.
-    Inputs: Feature class, excluding tokens list, excluded fields list.
-    Outputs: List of field names from input feature class. """
+    :param - feature_class - Feature class
+    :param - excluded_tolkens - list excluding tokens list,
+    :param - excluded_fields -  excluded fields list.
+    :return - List of field names from input feature class. """
     try:
         try:  # If  A feature Class split to game name
-            fcName = os.path.split(featureClass)[1]
+            fcName = os.path.split(feature_class)[1]
         except:  # If a Feature Layer, just print the Layer Name
-            fcName = featureClass
-        field_list = [f.name for f in arcpy.ListFields(featureClass) if f.type not in excludedTolkens
-                      and f.name.lower() not in excludedFields]
+            fcName = feature_class
+        field_list = [f.name for f in arcpy.ListFields(feature_class) if f.type not in excluded_tolkens
+                      and f.name.lower() not in excluded_fields]
         arc_print("The field list for {0} is:{1}".format(str(fcName), str(field_list)), True)
         return field_list
     except:
         arc_print(
             "Could not get fields for the following input {0}, returned an empty list.".format(
-                str(featureClass)),
+                str(feature_class)),
             True)
         arcpy.AddWarning(
             "Could not get fields for the following input {0}, returned an empty list.".format(
-                str(featureClass)))
+                str(feature_class)))
         field_list = []
         return field_list
 
 
-def get_f_index(field_names, field_name):
-    """Will get the index for a  arcpy da.cursor based on a list of field names as an input.
-    Assumes string will match if all the field names are made lower case.
-    :param - list of field names to select index from
-    :param - field_name used to determine index
-    :returns - index value (int)"""
-    try:
-        return [str(i).lower() for i in field_names].index(str(field_name).lower())
-    except:
-        print("Couldn't retrieve index for {0}, check arguments.".format(str(field_name)))
-        return None
+def construct_index_dict(field_names, index_start=0):
+    """This function will construct a dictionary used to retrieve indexes for cursors.
+    :param - field_names - list of strings (field names) to load as keys into a dictionary
+    :param - index_start - an int indicating the beginning index to start from (default 0).
+    :return - dictionary in the form of {field:index,...}"""
+    dict = {}
+    for index, field in enumerate(field_names, start=index_start):
+        dict.setdefault(field, index)
+    return dict
 
 
 # End do_analysis function

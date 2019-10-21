@@ -3,11 +3,11 @@
 # position. This version of the tool will join the original fields.
 # of the old feature class.
 # Author: David Wasserman
-# Last Modified: 8/31/2019
+# Last Modified: 10/20/2019
 # Copyright: David Wasserman
-# Python Version:   2.7
+# Python Version:  2.7/3.6
 # --------------------------------
-# Copyright 2015 David J. Wasserman
+# Copyright 2019 David J. Wasserman
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -62,6 +62,7 @@ def feature_line_pull(in_fc, out_pull_value, out_pull_field, start_point_bool, e
         preFields = fll.get_fields(in_fc)
         fields = ["SHAPE@"] + preFields
         cursor = arcpy.da.SearchCursor(in_fc, fields)
+        f_dict = fll.construct_index_dict(fields)
         with arcpy.da.InsertCursor(out_fc, fields) as insertCursor:
             fll.arc_print("Established insert cursor for " + str(FileName) + ".", True)
             lineCounter = 0
@@ -69,16 +70,17 @@ def feature_line_pull(in_fc, out_pull_value, out_pull_field, start_point_bool, e
                 try:
                     segment_rows = []
                     lineCounter += 1
-                    linegeo = singleline[fll.get_f_index(fields, "SHAPE@")]
+                    linegeo = singleline[f_dict["SHAPE@"]]
                     # Function splits linegeometry based on method and split value
                     split_segment_geometry = pull_line_geometry(linegeo,
                                                                 fll.line_length(singleline, out_pull_field,
-                                                                                out_pull_value, fields),
+                                                                                out_pull_value, f_dict),
                                                                 start_point_bool, end_point_bool)
                     segID = 0
                     try:
                         segID += 1
-                        segmentedRow = fll.copy_altered_row(singleline, fields, {"SHAPE@": split_segment_geometry})
+                        segmentedRow = fll.copy_altered_row(singleline, fields, f_dict,
+                                                            {"SHAPE@": split_segment_geometry})
                         segment_rows.append(segmentedRow)
                     except:
                         fll.arc_print("Could not iterate through line segment " + str(segID) + ".")

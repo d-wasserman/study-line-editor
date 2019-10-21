@@ -3,11 +3,11 @@
 # or target distance. Similar to editing tools done manually.This version of the tool will join the original fields
 # of the old feature class.
 # Author: David Wasserman
-# Last Modified: 8/31/2019
+# Last Modified: 10/20/2019
 # Copyright: David Wasserman
-# Python Version:   2.7
+# Python Version:   2.7/3.6
 # --------------------------------
-# Copyright 2015 David J. Wasserman
+# Copyright 2019 David J. Wasserman
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@
 # Import Modules
 import os, arcpy, math
 import featurelinelib as fll
+
 
 # Function Definitions
 @fll.arc_tool_report
@@ -66,6 +67,7 @@ def feature_line_split(in_fc, out_count_value, out_count_field, split_method, be
         preFields = fll.get_fields(in_fc)
         fields = ["SHAPE@"] + preFields
         cursor = arcpy.da.SearchCursor(in_fc, fields)
+        f_dict = fll.construct_index_dict(fields)
         with arcpy.da.InsertCursor(out_fc, fields) as insertCursor:
             fll.arc_print("Established insert cursor for " + str(FileName) + ".", True)
             lineCounter = 0
@@ -73,16 +75,15 @@ def feature_line_split(in_fc, out_count_value, out_count_field, split_method, be
                 try:
                     segment_rows = []
                     lineCounter += 1
-                    linegeo = singleline[fll.get_f_index(fields, "SHAPE@")]
-                    # Function splits linegeometry based on method and split value
-                    split_segment_list = split_line_geometry(linegeo,
-                                                             fll.line_length(singleline, out_count_field, out_count_value,
-                                                                         fields), split_method, best_fit_bool)
+                    linegeo = singleline[f_dict["SHAPE@"]]
+                    # Function splits line geometry based on method and split value
+                    line_length = fll.line_length(singleline, out_count_field, out_count_value, f_dict)
+                    split_segment_list = split_line_geometry(linegeo, line_length, split_method, best_fit_bool)
                     segID = 0
                     for segment in split_segment_list:
                         try:
                             segID += 1
-                            segmentedRow = fll.copy_altered_row(singleline, fields, {"SHAPE@": segment})
+                            segmentedRow = fll.copy_altered_row(singleline, fields, f_dict, {"SHAPE@": segment})
                             segment_rows.append(segmentedRow)
                         except:
                             fll.arc_print("Could not iterate through line segment " + str(segID) + ".")

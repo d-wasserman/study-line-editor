@@ -39,18 +39,18 @@ def split_line_geometry(linegeometry, split_value, split_method="LENGTH", best_f
     line_length = float(linegeometry.length)
     if str(split_method).upper() == "LENGTH" and not best_fit_bool:
         segment_total = int(math.ceil(line_length / float(split_value)))
-        for elinesegindex in range(0, segment_total):
-            start_position = (elinesegindex * (int(split_value)))
-            end_position = (elinesegindex + 1) * int(split_value)
+        for line_seg_index in range(0, segment_total):
+            start_position = (line_seg_index * (int(split_value)))
+            end_position = (line_seg_index + 1) * int(split_value)
             seg = linegeometry.segmentAlongLine(start_position, end_position)
             segment_list.append(seg)
     else:
         segmentation_value = int(round(max([1, split_value])))
         if str(split_method).upper() == "LENGTH" and best_fit_bool:
             segmentation_value = int(max([1, round(line_length / float(split_value))]))
-        for elinesegindex in range(0, segmentation_value):
-            seg = linegeometry.segmentAlongLine((elinesegindex / float(segmentation_value)),
-                                                ((elinesegindex + 1) / float(segmentation_value)), True)
+        for line_seg_index in range(0, segmentation_value):
+            seg = linegeometry.segmentAlongLine((line_seg_index / float(segmentation_value)),
+                                                ((line_seg_index + 1) / float(segmentation_value)), True)
             segment_list.append(seg)
     return segment_list
 

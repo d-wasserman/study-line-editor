@@ -50,3 +50,5 @@ Scripts/.idea/vcs.xml
 *.iml
 Scripts/.idea/workspace.xml
 *.xml
+Index/
+ImportLog/

@@ -6,6 +6,8 @@ This repository holds a collection of easy to use ArcGIS Geoprocessing scripts  
 
 * Feature Line Whiskers - create a new feature class that perpendicular lines generated based on the sampled headings of the input polylines. 
 
+* Feature Line Corridor Assembly - will add corridor ids to an output line network for all lines that are parallel within a tolerance and spatially connected/contiguous. 
+
 In depth descriptions, are provided below. 
 
 # Feature Line Split
@@ -220,6 +222,71 @@ Works in ArcGIS Pro (2to3 compatible)
 <span style="font-weight: bold">Python Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><DIV><P><SPAN>Whiskers should be perpendicular to the input line.</SPAN></P></DIV></DIV></DIV></td>
 <td class="info" align="left">Feature Class</td>
 </tr>
+</tbody>
+</table>
+
+# Feature Line Corridor Assembly
+
+<b>Summary</b>
+ 
+This tool will construct a near table to construct a relationship table between lines. It will using the bearing of lines and their corresponding relationships to generate corridor ids consisting of all parallel line features within the threshold that are connected to each other. 
+
+<b>Usage</b>
+ 
+This tool will construct a near table to construct a relationship table between lines. It will using the bearing of lines and their corresponding relationships to generate corridor ids consisting of all parallel line features within the threshold that are connected to each other. The intended uses for this are: 
+
+* Aid in the creation of study segments to summarize data on for linear networks. 
+
+* Provide a tool to generate corridors for study and data summarization that does not depend on arbitrary street names or functional class attributes. 
+
+* Provide a tool for batch editing and segmentation of polylines.
+
+Works in ArcGIS Pro (2to3 compatible). This tool requires the pandas library to work. 
+
+<b>Parameters</b>
+
+<table width="100%" border="0" cellpadding="5">
+<tbody>
+<tr>
+<th width="30%">
+<b>Parameter</b>
+</th>
+<th width="50%">
+<b>Explanation</b>
+</th>
+<th width="20%">
+<b>Data Type</b>
+</th>
+</tr>
+<tr>
+<td class="info">Input_Feature_Line</td>
+<td class="info" align="left">
+<span style="font-weight: bold">Dialog Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><P><SPAN>This is the input feature class whose individual geometry will be used to assemble corridors from parallel connected lines. 
+ </SPAN></P></DIV></DIV><div class="noContent" style="text-align:center; margin-top: -1em">___________________</div><br />
+<span style="font-weight: bold">Python Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><P><SPAN>This tool depends on the pandas Python Library.</SPAN></P></DIV></DIV></td>
+<td class="info" align="left">Feature Layer</td>
+</tr>
+<tr>
+<td class="info">Output_Feature_Line</td>
+<td class="info" align="left">
+<span style="font-weight: bold">Dialog Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><P><SPAN>This output line feature class of the tool is a copy of the input network with line statistics and corridor attributes added. The fields added include: "Azimuth", "Link_Cnt", "Min_Link_Angle", "Max_Link_Angle", "Mean_Link_Angle", "Parallel_Present", "Corridor_ID"
+</SPAN></P></DIV></DIV><p><span class="noContent">There is no python reference for this parameter.</span></p></td>
+<td class="info" align="left">Long</td>
+</tr>
+<tr>
+<td class="info">Connected_Range</td>
+<td class="info" align="left">
+<span style="font-weight: bold">Dialog Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><DIV><P><SPAN>This represents the distance between connected line segments. If lines are directly connected this should be a very small number. 
+ </SPAN></P><P><SPAN /></P></DIV></DIV></DIV><p><span class="noContent">There is no python reference for this parameter.</span></p></td>
+<td class="info" align="left">Field</td>
+</tr>
+<tr>
+<td class="info">Parallel_Threshold</td>
+<td class="info" align="left">
+<span style="font-weight: bold">Dialog Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><P><SPAN>The threshold of angles in degrees between parallel lines and non-parallel lines. </SPAN></P></DIV></DIV><p><span class="noContent">There is no python reference for this parameter.</span></p></td>
+<td class="info" align="left">String</td>
+</tr>
+<tr>
 </tbody>
 </table>
 

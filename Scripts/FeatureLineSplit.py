@@ -23,7 +23,7 @@
 # --------------------------------
 # Import Modules
 import os, arcpy, math
-import featurelinelib as fll
+import linelibrary as fll
 
 
 # Function Definitions

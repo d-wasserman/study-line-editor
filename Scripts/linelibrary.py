@@ -24,7 +24,10 @@
 
 # Import Modules
 import arcpy
-import os, re
+import os
+import itertools
+import pandas as pd
+import math
 
 
 # Function Definitions
@@ -150,6 +153,7 @@ def validate_df_names(dataframe, output_feature_class_workspace):
     dataframe.rename(index=str, columns=rename_dict)
     return dataframe
 
+
 @arc_tool_report
 def arcgis_table_to_dataframe(in_fc, input_fields, query="", skip_nulls=False, null_values=None):
     """Function will convert an arcgis table into a pandas dataframe with an object ID index, and the selected
@@ -164,6 +168,7 @@ def arcgis_table_to_dataframe(in_fc, input_fields, query="", skip_nulls=False, n
     fc_dataframe = pd.DataFrame(np_array, index=object_id_index, columns=input_fields)
     return fc_dataframe
 
+
 @arc_tool_report
 def arcgis_table_to_df(in_fc, input_fields=None, query=""):
     """Function will convert an arcgis table into a pandas dataframe with an object ID index, and the selected
@@ -177,9 +182,9 @@ def arcgis_table_to_df(in_fc, input_fields=None, query=""):
         final_fields = [OIDFieldName] + input_fields
     else:
         final_fields = [field.name for field in arcpy.ListFields(in_fc)]
-    data = [row for row in arcpy.da.SearchCursor(in_fc,final_fields,where_clause=query)]
-    fc_dataframe = pd.DataFrame(data,columns=final_fields)
-    fc_dataframe = fc_dataframe.set_index(OIDFieldName,drop=True)
+    data = [row for row in arcpy.da.SearchCursor(in_fc, final_fields, where_clause=query)]
+    fc_dataframe = pd.DataFrame(data, columns=final_fields)
+    fc_dataframe = fc_dataframe.set_index(OIDFieldName, drop=True)
     return fc_dataframe
 
 
@@ -281,6 +286,102 @@ def construct_index_dict(field_names, index_start=0):
     return dict
 
 
+def find_smallest_angle(angle1, angle2, absolute_value=False):
+    """Find the smallest angle between two provided azimuth angles.
+    @param: - angle1 - first angle in degrees between 0 and 360 degrees
+    @param: - angle2 - first angle in degrees between 0 and 360 degrees
+    @param: - absolute_value - if true, return absolute value of result
+    """
+    diff = angle1 - angle2
+    diff = (diff + 180) % 360 - 180
+    if absolute_value:
+        diff = abs(diff)
+    return diff
+
+
+def convert_to_azimuth(angle):
+    """Converts Near 180 to -180 angles to Azimuth Angles. Will also normalize any number to 0-360 .
+    @param: angle - angle denoted in terms of 180 to -180 degrees
+    @returns angle - angle 0 to 360"""
+    if angle <= 180 and angle > 90:
+        azimuth_angles = 360.0 - (angle - 90)
+    else:
+        azimuth_angles = abs(angle - 90)
+    if abs(azimuth_angles) > 360:
+        azimuth_angles % 360
+    return azimuth_angles
+
+
+def calculate_line_bearing(in_fc, field, convert_azimuth=False):
+    """Adds a new field and update it to provide a line bearing in degrees.
+     @param - in_fc - input feature class to add bear
+     @param - field - new field to add bearing
+     @param - convert_azimuth - convert the bearing from 0 to 360 degrees"""
+    add_new_field(in_fc, field, "DOUBLE")
+    return_oid_bearing_dict = {}
+    with arcpy.da.UpdateCursor(in_fc, ["OID@", "SHAPE@", field]) as cursor:
+        for row in cursor:
+            ObjectID = row[0]
+            first_point = row[1].firstPoint
+            last_point = row[1].lastPoint
+            first_x = first_point.X
+            first_y = first_point.Y
+            last_x = last_point.X
+            last_y = last_point.Y
+            dx = last_x - first_x
+            dy = last_y - first_y
+            rads = math.atan2(dy, dx)
+            angle = math.degrees(rads)
+            if convert_azimuth:
+                angle = convert_to_azimuth(angle)
+            row[2] = angle
+            return_oid_bearing_dict.update({ObjectID: angle})
+            cursor.updateRow(row)
+        arc_print("Updated Line Bearing field.")
+    del cursor
+    return return_oid_bearing_dict
+
+
+def find_smallest_angle_from_intersecting_lines(angle_1, angle_2, angle_1_inverse=None, angle_2_inverse=None):
+    """Given two angles indicating a lines orientation, this function will determine the inverse versions of their angles, and
+    test every combination of angle to determine the smallest possible angle between them.
+    @:param - angle_1 - first angle of a line bearing of unknown orientation. Assumes azimuth angle 0-360 degrees.
+    @:param - angle_2 - second angle of a line bearing of unknown orientation. Assumes azimuth angle 0-360 degrees.
+    @:param - angle_1_inverse - inverse angle of angle_1- if not provided, is derived.
+    @:param - angle_2_inverse- inverse angle of angle_2- if not provided, is derived. """
+    if angle_1_inverse is None:
+        angle_1_inverse = (angle_1 + 180) % 360
+    if angle_2_inverse is None:
+        angle_2_inverse = (angle_2 + 180) % 360
+    angle_combinations = itertools.combinations([angle_1, angle_2, angle_1_inverse, angle_2_inverse], 2)
+    smallest_angle = None
+    for angle_1, angle_2 in angle_combinations:
+        small_angle = find_smallest_angle(angle_1, angle_2, True)
+        if smallest_angle is None:
+            smallest_angle = small_angle
+        else:
+            smallest_angle = min([small_angle, smallest_angle])
+    return smallest_angle
+
+
+def find_smallest_angle_column(df, bearing_column_1, bearing_column_2, new_field_prexix="Inverted_",
+                               new_column="Smallest_Angle"):
+    """Add a column to pandas dataframe that takes a 0 to 360 degree azimuth angle and adds its inverse.
+    @:param - df - a pandas dataframe
+    @:param - bearing_column_1 - column in dataframe with the angle the line is pointing
+    @:param - bearing_column_2 - column in dataframe with the angle the line is pointing
+    @:param - new_field_prefix - inverted angle columns added for each angle with this prefix added to them
+    @:param - new_column - name of the inverted azimuth angle"""
+    inverted_col_1 = str(new_field_prexix) + bearing_column_1
+    inverted_col_2 = str(new_field_prexix) + bearing_column_2
+    df[inverted_col_1] = (df[bearing_column_1] + 180).mod(360)
+    df[inverted_col_2] = (df[bearing_column_2] + 180).mod(360)
+    df[new_column] = df.apply(lambda x: find_smallest_angle_from_intersecting_lines(
+        x[bearing_column_1], x[bearing_column_2], x[inverted_col_1], x[inverted_col_2]
+    ), axis=1)
+    return df
+
+
 # End do_analysis function
 
 # This test allows the script to be used from the operating
@@ -289,4 +390,4 @@ def construct_index_dict(field_names, index_start=0):
 # another script
 if __name__ == '__main__':
     # Define input parameters
-    print("Function library: featurelinelib.py")
+    print("Function library: linelibrary.py")

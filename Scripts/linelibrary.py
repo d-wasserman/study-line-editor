@@ -26,8 +26,13 @@
 import arcpy
 import os
 import itertools
-import pandas as pd
 import math
+try:
+    import pandas as pd
+except:
+    arcpy.AddWarning("Some tools require the Pandas installed in the ArcGIS Python Install."
+                   " Might require installing pre-requisite libraries and software.")
+
 
 
 # Function Definitions

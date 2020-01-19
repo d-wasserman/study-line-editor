@@ -48,7 +48,7 @@ def func_report(function=None, reportBool=False):
                 if reportBool:
                     print("Function:{0}".format(str(function.__name__)))
                     print("     Input(s):{0}".format(str(args)))
-                    print("     Ouput(s):{0}".format(str(func_result)))
+                    print("     Output(s):{0}".format(str(func_result)))
                 return func_result
             except Exception as e:
                 print(
@@ -78,11 +78,11 @@ def arc_tool_report(function=None, arcToolMessageBool=False, arcProgressorBool=F
                 if arcToolMessageBool:
                     arcpy.AddMessage("Function:{0}".format(str(function.__name__)))
                     arcpy.AddMessage("     Input(s):{0}".format(str(args)))
-                    arcpy.AddMessage("     Ouput(s):{0}".format(str(func_result)))
+                    arcpy.AddMessage("     Output(s):{0}".format(str(func_result)))
                 if arcProgressorBool:
                     arcpy.SetProgressorLabel("Function:{0}".format(str(function.__name__)))
                     arcpy.SetProgressorLabel("     Input(s):{0}".format(str(args)))
-                    arcpy.SetProgressorLabel("     Ouput(s):{0}".format(str(func_result)))
+                    arcpy.SetProgressorLabel("     Output(s):{0}".format(str(func_result)))
                 return func_result
             except Exception as e:
                 arcpy.AddMessage(

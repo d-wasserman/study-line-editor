@@ -1,4 +1,4 @@
-This repository holds a collection of easy to use ArcGIS Geoprocessing scripts  (10.3+ and Pro) intended for batch line editing. The tools are described below. 
+This repository holds a collection of easy to use ArcGIS Geoprocessing scripts (10.3+ and Pro) intended to provide automated line editing routines to help create useful study geometries. The tools are described below. 
 
 * Feature Line Split - create a new feature class that has input lines split into an arbitrary number of segments. 
 

@@ -114,7 +114,7 @@ def assemble_corridors_from_network(input_network, output_network, connected_ran
     angle_results = angle_results.merge(corridor_df, how="left", left_on="IN_FID", right_index=True)
     angle_rec = angle_results.to_records()
     ll.arc_print("Joining Bearing & Corridor Fields...")
-    arcpy.da.ExtendTable(output_network, oid, angle_rec, "IN_FID", True)
+    arcpy.da.ExtendTable(output_network, oid, angle_rec, "IN_FID", False)
     ll.arc_print("Script Complete...")
 
 

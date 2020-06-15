@@ -294,4 +294,4 @@ Works in ArcGIS Pro (2to3 compatible). This tool requires the pandas library to 
 
 If you use the tool in academic research or as part of professional reports, please cite the rule as the following:
 
-Wasserman, D. Feature Line Split. (2019) GitHub repository, GitHub https://github.com/d-wasserman/feature-line-split. 
+Wasserman, D. Study Line Editor. (2019) GitHub repository, GitHub https://github.com/d-wasserman/study-line-editor. 

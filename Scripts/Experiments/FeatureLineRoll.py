@@ -27,32 +27,27 @@ import linelibrary as fll
 
 
 # Function Definitions
+
 @fll.arc_tool_report
-def split_line_geometry(linegeometry, split_value, split_method="LENGTH", best_fit_bool=True):
-    """This function will take an ArcPolyline, a split value, a split method of either 'LENGTH' or 'SEGMENT COUNT', and
-    boolean that determines if the lines split are the best of fit based on the length. The function returns a list of
-    line geometries whose length and number are determined by the split value, split method, and best fit settings.
-    Line Geometry- arc polyline/split value- the length or desired number of segments, /split method- determines if
-    split value is treated as a length target or segment count target/ best fit bool determines if the length is rounded
-    to be segments of equal length."""
-    segment_list = []
+def get_line_ends(linegeometry, pull_value):
+    """This function will take an ArcPolyline and a pull value. The function returns
+    a the start and end points of the line as separate geometries.
+    Line Geometry- arc polyline/pull_value- the length or desired number of segments, /pull_value- the distance the
+    line will be pulled back from either the start or end point/ end_point_pull- if true, the end point of the line will
+    be pulled back the target distance, start_point_bool- if true, the start point of the line will be pulled back the
+    target distance. """
+    segment_returned = None
     line_length = float(linegeometry.length)
-    if str(split_method).upper() == "LENGTH" and not best_fit_bool:
-        segment_total = int(math.ceil(line_length / float(split_value)))
-        for line_seg_index in range(0, segment_total):
-            start_position = (line_seg_index * (int(split_value)))
-            end_position = (line_seg_index + 1) * int(split_value)
-            seg = linegeometry.segmentAlongLine(start_position, end_position)
-            segment_list.append(seg)
-    else:
-        segmentation_value = int(round(max([1, split_value])))
-        if str(split_method).upper() == "LENGTH" and best_fit_bool:
-            segmentation_value = int(max([1, round(line_length / float(split_value))]))
-        for line_seg_index in range(0, segmentation_value):
-            seg = linegeometry.segmentAlongLine((line_seg_index / float(segmentation_value)),
-                                                ((line_seg_index + 1) / float(segmentation_value)), True)
-            segment_list.append(seg)
-    return segment_list
+    end_point_end_position = line_length
+    start_point_end_position = 0
+    try:
+        end_point_start_position = line_length - pull_value
+        start_point_start_position = 0 + pull_value
+        start_segment = linegeometry.segmentAlongLine(start_point_start_position, start_point_end_position)
+        end_segment = linegeometry.segmentAlongLine(end_point_start_position, end_point_end_position)
+    except:  # This function fails if the line is shorter than the pull value, in this case no geometry is returned.
+        return None
+    return start_segment, end_segment
 
 
 def feature_line_roll(in_fc, out_count_value, out_count_field, split_method, best_fit_bool, out_fc):

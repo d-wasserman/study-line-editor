@@ -30,7 +30,7 @@ import linelibrary as fll
 @fll.arc_tool_report
 def pull_line_geometry(linegeometry, pull_value, end_point_bool=True, start_point_bool=True):
     """This function will take an ArcPolyline, a pull value, and a start and end point boolean. The function returns
-    a a line geometry whose length are pulled back based on the input parameters.
+    a line geometry whose length are pulled back based on the input parameters.
     Line Geometry- arc polyline/pull_value- the length or desired number of segments, /pull_value- the distance the
     line will be pulled back from either the start or end point/ end_point_pull- if true, the end point of the line will
     be pulled back the target distance, start_point_bool- if true, the start point of the line will be pulled back the

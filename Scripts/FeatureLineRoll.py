@@ -1,7 +1,7 @@
 # Name: FeatureLineRoll.py
 # Purpose: Take a feature line and extend its end points based on the angle implied by a sample of the line identified
 # from its start and end point. This tool has an optional ability to use the Integrate geoprocessing tools after line
-# extensions to match the lines ahead of its vertex.
+# extensions to match the lines ahead of its vertex. Intended to enable rolling window operations.
 # Author: David Wasserman
 # Last Modified: 3/11/2022
 # Copyright: David Wasserman
@@ -29,39 +29,41 @@ import linelibrary as fll
 # Function Definitions
 
 @fll.arc_tool_report
-def get_line_ends(linegeometry, pull_value, percentage=None):
+def get_line_ends(linegeometry, pull_value, percentage=False):
     """This function will take an ArcPolyline and a pull value. The function returns
     a the start and end points of the line as separate geometries.
     Parameters
     ---------------------
     Line Geometry - arc polyline input
     pull_value - the distance the line will be pulled back from either the start or end point
-    percentage - instead of a length value, this will get line ends based on a percentage"""
+    percentage - if true, pull value is treated as a percentage."""
     segment_returned = None
     line_length = float(linegeometry.length)
     end_point_end_position = line_length
     start_point_end_position = 0
     try:
-        if percentage is None:
         end_point_start_position = line_length - pull_value
         start_point_start_position = 0 + pull_value
-        start_segment = linegeometry.segmentAlongLine(start_point_start_position, start_point_end_position)
-        end_segment = linegeometry.segmentAlongLine(end_point_start_position, end_point_end_position)
+        start_segment = linegeometry.segmentAlongLine(start_point_start_position, start_point_end_position, percentage)
+        end_segment = linegeometry.segmentAlongLine(end_point_start_position, end_point_end_position, percentage)
     except:  # This function fails if the line is shorter than the pull value, in this case no geometry is returned.
-        return None
+        return None,None
     return start_segment, end_segment
 
 
-def feature_line_roll(in_fc, out_count_value, out_count_field, split_method, best_fit_bool, out_fc):
+def feature_line_roll(in_fc,extension_distance, post_extension_integration,integration_tolerance,
+                      end_sampling_percentage, out_fc):
     """Take a feature line and extend its end points based on the angle implied by a sample of the line identified
     from its start and end point. This tool has an optional ability to use the Integrate geoprocessing tools after
     line extensions to match the lines ahead of its vertex.
     Parameters
     ---------------------
-    in_fc - Line Geometry- arc polyline
-    end_sampling_length - the length segment to sample end from in current projection units
-
-
+    in_fc - Line Geometry- input arc polyline to extend/roll
+    extension_distance - the distance to extend the line in both directions (units of projection)
+    post_extension_integration- if true, the integrate tool will be run post extension
+    integration_tolerance - the distance vertices will be merged of the rolling network to the original
+    end_sampling_percentage - the length segment to sample end from in current projection units
+    out_fc - output feature class with extended lines based on sampling of end segments
     """
     try:
         arcpy.env.overwriteOutput = True

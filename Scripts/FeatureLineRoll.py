@@ -120,11 +120,12 @@ def feature_line_roll(in_fc,extension_distance, post_extension_integration,integ
 # another script
 if __name__ == '__main__':
     # Define Inputs
+
     FeatureClass = arcpy.GetParameterAsText(0)
-    Desired_Feature_Count = arcpy.GetParameter(1)
-    Feature_Count_Field = arcpy.GetParameterAsText(2)
-    Split_Method = arcpy.GetParameterAsText(3)
-    Best_Fit_Bool = arcpy.GetParameter(4)
+    ExtensionDistance = arcpy.GetParameter(1)
+    PostExtensionIntegration = arcpy.GetParameterAsText(2)
+    IntegrationTolerance = arcpy.GetParameterAsText(3)
+    EndSamplingPercentage = arcpy.GetParameter(4)
     OutFeatureClass = arcpy.GetParameterAsText(5)
-    feature_line_split(FeatureClass, Desired_Feature_Count, Feature_Count_Field, Split_Method, Best_Fit_Bool,
-                       OutFeatureClass)
+    feature_line_roll(FeatureClass,ExtensionDistance, PostExtensionIntegration, IntegrationTolerance,
+                      EndSamplingPercentage,O utFeatureClass)

@@ -316,20 +316,13 @@ def convert_to_azimuth(angle):
         azimuth_angles % 360
     return azimuth_angles
 
-def calculate_segment_bearing(shape_obj):
+def calculate_segment_bearing(shape_obj, method="GEODESIC"):
     """Calculate the bearing from a single shape object and return the angle. Assumes projected coords.
     @param - shape object from arcpy for a polyline
     returns - angle - float - angle in degrees (not azimuth)"""
     first_point = shape_obj.firstPoint
     last_point = shape_obj.lastPoint
-    first_x = first_point.X
-    first_y = first_point.Y
-    last_x = last_point.X
-    last_y = last_point.Y
-    dx = last_x - first_x
-    dy = last_y - first_y
-    rads = math.atan2(dy, dx)
-    angle = math.degrees(rads)
+    angle, dist = first_point.angleAndDistanceTo(last_point, method)
     return angle
 
 def calculate_line_bearing(in_fc, field, convert_azimuth=False):

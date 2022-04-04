@@ -47,11 +47,11 @@ def get_line_ends(linegeometry, pull_value, percentage=False):
         start_segment = linegeometry.segmentAlongLine(start_point_start_position, start_point_end_position, percentage)
         end_segment = linegeometry.segmentAlongLine(end_point_start_position, end_point_end_position, percentage)
     except:  # This function fails if the line is shorter than the pull value, in this case no geometry is returned.
-        return None,None
+        return None, None
     return start_segment, end_segment
 
 
-def feature_line_roll(in_fc,extension_distance, post_extension_integration,integration_tolerance,
+def feature_line_roll(in_fc, extension_distance, post_extension_integration, integration_tolerance,
                       end_sampling_percentage, out_fc):
     """Take a feature line and extend its end points based on the angle implied by a sample of the line identified
     from its start and end point. This tool has an optional ability to use the Integrate geoprocessing tools after
@@ -84,21 +84,13 @@ def feature_line_roll(in_fc,extension_distance, post_extension_integration,integ
                     lineCounter += 1
                     linegeo = singleline[f_dict["SHAPE@"]]
                     # Function splits line geometry based on method and split value
-                    line_length = fll.line_length(singleline, out_count_field, out_count_value, f_dict)
-                    split_segment_list = split_line_geometry(linegeo, line_length, split_method, best_fit_bool)
+                    start_seg, end_seg = get_line_ends(linegeo, float(end_sampling_percentage), True)
+                    start_bearing  = fll.calculate_segment_bearing(start_seg)
+                    end_bearing = fll.calculate_segment_bearing(end_seg)
+
                     segID = 0
-                    for segment in split_segment_list:
-                        try:
-                            segID += 1
-                            segmentedRow = fll.copy_altered_row(singleline, fields, f_dict, {"SHAPE@": segment})
-                            segment_rows.append(segmentedRow)
-                        except:
-                            fll.arc_print("Could not iterate through line segment " + str(segID) + ".")
-                            break
-                    if len(segment_rows) == len(
-                            split_segment_list):  # Unload by feature so partial segments are not made.
-                        for row in segment_rows:
-                            insertCursor.insertRow(row)
+
+                    insertCursor.insertRow(row)
                     if lineCounter % 500 == 0:
                         fll.arc_print("Iterated through and split feature " + str(lineCounter) + ".", True)
                 except Exception as e:
@@ -127,5 +119,5 @@ if __name__ == '__main__':
     IntegrationTolerance = arcpy.GetParameterAsText(3)
     EndSamplingPercentage = arcpy.GetParameter(4)
     OutFeatureClass = arcpy.GetParameterAsText(5)
-    feature_line_roll(FeatureClass,ExtensionDistance, PostExtensionIntegration, IntegrationTolerance,
-                      EndSamplingPercentage,O utFeatureClass)
+    feature_line_roll(FeatureClass, ExtensionDistance, PostExtensionIntegration, IntegrationTolerance,
+                      EndSamplingPercentage, OutFeatureClass)

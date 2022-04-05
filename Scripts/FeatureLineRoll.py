@@ -87,7 +87,10 @@ def feature_line_roll(in_fc, extension_distance, post_extension_integration, int
                     start_seg, end_seg = get_line_ends(linegeo, float(end_sampling_percentage), True)
                     start_bearing  = fll.calculate_segment_bearing(start_seg)
                     end_bearing = fll.calculate_segment_bearing(end_seg)
-
+                    start_end_pt = arcpy.PointGeometry(start_seg.lastPoint)
+                    end_end_pt = arcpy.PointGeometry(end_seg.lastPoint)
+                    new_start_end_pt = start_end_pt.pointFromAngleAndDistance(start_bearing,extension_distance)
+                    new_end_end_pt = end_end_pt.pointFromAngleAndDistance(end_bearing, extension_distance)
                     segID = 0
 
                     insertCursor.insertRow(row)

@@ -320,8 +320,8 @@ def calculate_segment_bearing(shape_obj, method="GEODESIC"):
     """Calculate the bearing from a single shape object and return the angle. Assumes projected coords.
     @param - shape object from arcpy for a polyline
     returns - angle - float - angle in degrees (not azimuth)"""
-    first_point = arcpy.arcpy.PointGeometry(shape_obj).firstPoint
-    last_point = arcpy.PointGeometry(shape_obj).lastPoint
+    first_point = arcpy.PointGeometry(shape_obj.firstPoint)
+    last_point = arcpy.PointGeometry(shape_obj.lastPoint)
     angle, dist = first_point.angleAndDistanceTo(last_point, method)
     return angle
 

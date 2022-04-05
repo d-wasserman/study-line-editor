@@ -92,14 +92,15 @@ def feature_line_roll(in_fc, extension_distance, post_extension_integration, int
                     new_start_end_pt = start_end_pt.pointFromAngleAndDistance(start_bearing,extension_distance)
                     new_end_end_pt = end_end_pt.pointFromAngleAndDistance(end_bearing, extension_distance)
                     segID = 0
-
+                    new_line = linegeo
+                    row = fll.copy_altered_row(singleline, fields, f_dict, {"SHAPE@": new_line})
                     insertCursor.insertRow(row)
                     if lineCounter % 500 == 0:
                         fll.arc_print("Iterated through and split feature " + str(lineCounter) + ".", True)
                 except Exception as e:
                     fll.arc_print("Failed to iterate through and a split feature " + str(lineCounter) + ".", True)
                     fll.arc_print(e.args[0])
-            del cursor, insertCursor, fields, preFields, OutWorkspace, lineCounter, split_segment_list
+            del cursor, insertCursor, fields, preFields, OutWorkspace, lineCounter
             fll.arc_print("Script Completed Successfully.", True)
     except arcpy.ExecuteError:
         fll.arc_print(arcpy.GetMessages(2))

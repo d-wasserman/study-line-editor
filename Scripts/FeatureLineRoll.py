@@ -92,7 +92,20 @@ def feature_line_roll(in_fc, extension_distance, post_extension_integration, int
                     new_start_end_pt = start_end_pt.pointFromAngleAndDistance(start_bearing,extension_distance)
                     new_end_end_pt = end_end_pt.pointFromAngleAndDistance(end_bearing, extension_distance)
                     segID = 0
-                    new_line = linegeo
+                    part_number = 0
+                    all_parts = []
+                    for part in linegeo:
+                        part_list = []
+                        point_number = 0
+                        for point in linegeo.getPart(part_number):
+                            if part_number == 0 and point_number == 0:
+                                point_number += 1
+                                part_list.append(new_start_end_pt)
+                            if point:
+                                part_list.append(point)
+                        all_parts.append(part_list)
+                    all_parts[-1].append(new_end_end_pt)
+                    new_line = arcpy.Polyline(all_parts)
                     row = fll.copy_altered_row(singleline, fields, f_dict, {"SHAPE@": new_line})
                     insertCursor.insertRow(row)
                     if lineCounter % 500 == 0:

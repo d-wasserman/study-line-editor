@@ -131,10 +131,10 @@ if __name__ == '__main__':
     # Define Inputs
 
     FeatureClass = arcpy.GetParameterAsText(0)
-    ExtensionDistance = arcpy.GetParameter(1)
-    PostExtensionIntegration = arcpy.GetParameterAsText(2)
-    IntegrationTolerance = arcpy.GetParameterAsText(3)
-    EndSamplingPercentage = arcpy.GetParameter(4)
+    ExtensionDistance = float(arcpy.GetParameter(1))
+    PostExtensionIntegration = bool(arcpy.GetParametrAsText(2))
+    IntegrationTolerance = float(arcpy.GetParameterAsText(3))
+    EndSamplingPercentage = float(arcpy.GetParameter(4))
     OutFeatureClass = arcpy.GetParameterAsText(5)
     feature_line_roll(FeatureClass, ExtensionDistance, PostExtensionIntegration, IntegrationTolerance,
                       EndSamplingPercentage, OutFeatureClass)

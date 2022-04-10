@@ -133,6 +133,7 @@ if __name__ == '__main__':
     FeatureClass = arcpy.GetParameterAsText(0)
     ExtensionDistance = float(arcpy.GetParameter(1))
     PostExtensionIntegration = bool(arcpy.GetParametrAsText(2))
+    PostExtensionIntegration = bool(arcpy.GetParameterAsText(2))
     IntegrationTolerance = float(arcpy.GetParameterAsText(3))
     EndSamplingPercentage = float(arcpy.GetParameter(4))
     OutFeatureClass = arcpy.GetParameterAsText(5)

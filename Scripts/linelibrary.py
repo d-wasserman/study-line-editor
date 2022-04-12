@@ -335,7 +335,7 @@ def calculate_line_bearing(in_fc, field, convert_azimuth=False):
             last_y = last_point.Y
             dx = last_x - first_x
             dy = last_y - first_y
-            rads = math.atan2(dy, dx)
+            rads = math.atan2(dx, dy)
             angle = math.degrees(rads)
             if convert_azimuth:
                 angle = convert_to_azimuth(angle)

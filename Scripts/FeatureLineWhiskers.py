@@ -52,7 +52,7 @@ def get_line_heading(polyline_obj, in_azimuth=False):
     last_y = last_point.Y
     dx = last_x - first_x
     dy = last_y - first_y
-    rads = math.atan2(dy, dx)
+    rads = math.atan2(dx, dy)
     angle = math.degrees(rads)
     if in_azimuth:
         angle = get_azimuth(angle)

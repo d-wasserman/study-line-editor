@@ -35,11 +35,10 @@ def get_line_ends(linegeometry, pull_value, percentage=False):
     Parameters
     ---------------------
     Line Geometry - arc polyline input
-    pull_value - the distance the line will be pulled back from either the start or end point
+    pull_value - the distance or percentage the line will be pulled back from either the start or end point
     percentage - if true, pull value is treated as a percentage."""
-    segment_returned = None
-    line_length = float(linegeometry.length)
-    end_point_end_position = line_length
+    line_length = 1 if percentage else float(linegeometry.length)
+    end_point_end_position = 1 if percentage else line_length
     start_point_end_position = 0
     try:
         end_point_start_position = line_length - pull_value
@@ -65,60 +64,62 @@ def feature_line_roll(in_fc, extension_distance, post_extension_integration, int
     end_sampling_percentage - the length segment to sample end from in current projection units
     out_fc - output feature class with extended lines based on sampling of end segments
     """
-    try:
-        arcpy.env.overwriteOutput = True
-        OutWorkspace = os.path.split(out_fc)[0]
-        FileName = os.path.split(out_fc)[1]
-        arcpy.CreateFeatureclass_management(OutWorkspace, FileName, "POLYLINE", in_fc, spatial_reference=in_fc,
-                                            has_m="SAME_AS_TEMPLATE", has_z="SAME_AS_TEMPLATE")
-        preFields = fll.get_fields(in_fc)
-        fields = ["SHAPE@"] + preFields
-        cursor = arcpy.da.SearchCursor(in_fc, fields)
-        f_dict = fll.construct_index_dict(fields)
-        with arcpy.da.InsertCursor(out_fc, fields) as insertCursor:
-            fll.arc_print("Established insert cursor for " + str(FileName) + ".", True)
-            lineCounter = 0
-            for singleline in cursor:
-                try:
-                    segment_rows = []
-                    lineCounter += 1
-                    linegeo = singleline[f_dict["SHAPE@"]]
-                    # Function splits line geometry based on method and split value
-                    start_seg, end_seg = get_line_ends(linegeo, float(end_sampling_percentage), True)
-                    start_bearing  = fll.calculate_segment_bearing(start_seg)
-                    end_bearing = fll.calculate_segment_bearing(end_seg)
-                    start_end_pt = arcpy.PointGeometry(start_seg.lastPoint)
-                    end_end_pt = arcpy.PointGeometry(end_seg.lastPoint)
-                    new_start_end_pt = start_end_pt.pointFromAngleAndDistance(start_bearing,extension_distance)
-                    new_end_end_pt = end_end_pt.pointFromAngleAndDistance(end_bearing, extension_distance)
-                    segID = 0
-                    part_number = 0
-                    all_parts = []
-                    for part in linegeo:
-                        part_list = []
-                        point_number = 0
-                        for point in linegeo.getPart(part_number):
-                            if part_number == 0 and point_number == 0:
-                                point_number += 1
-                                part_list.append(new_start_end_pt)
-                            if point:
-                                part_list.append(point)
-                        all_parts.append(part_list)
-                    all_parts[-1].append(new_end_end_pt)
-                    new_line = arcpy.Polyline(all_parts)
-                    row = fll.copy_altered_row(singleline, fields, f_dict, {"SHAPE@": new_line})
-                    insertCursor.insertRow(row)
-                    if lineCounter % 500 == 0:
-                        fll.arc_print("Iterated through and split feature " + str(lineCounter) + ".", True)
-                except Exception as e:
-                    fll.arc_print("Failed to iterate through and a split feature " + str(lineCounter) + ".", True)
-                    fll.arc_print(e.args[0])
-            del cursor, insertCursor, fields, preFields, OutWorkspace, lineCounter
-            fll.arc_print("Script Completed Successfully.", True)
-    except arcpy.ExecuteError:
-        fll.arc_print(arcpy.GetMessages(2))
-    except Exception as e:
-        fll.arc_print(e.args[0])
+    # try:
+    arcpy.env.overwriteOutput = True
+    OutWorkspace = os.path.split(out_fc)[0]
+    FileName = os.path.split(out_fc)[1]
+    arcpy.CreateFeatureclass_management(OutWorkspace, FileName, "POLYLINE", in_fc, spatial_reference=in_fc,
+                                        has_m="SAME_AS_TEMPLATE", has_z="SAME_AS_TEMPLATE")
+    preFields = fll.get_fields(in_fc)
+    fields = ["SHAPE@"] + preFields
+    cursor = arcpy.da.SearchCursor(in_fc, fields)
+    f_dict = fll.construct_index_dict(fields)
+    with arcpy.da.InsertCursor(out_fc, fields) as insertCursor:
+        fll.arc_print("Established insert cursor for " + str(FileName) + ".", True)
+        lineCounter = 0
+        for singleline in cursor:
+            # try:
+            segment_rows = []
+            lineCounter += 1
+            linegeo = singleline[f_dict["SHAPE@"]]
+            # Function splits line geometry based on method and split value
+            start_seg, end_seg = get_line_ends(linegeo, float(end_sampling_percentage), True)
+            start_bearing  = fll.calculate_segment_bearing(start_seg)
+            end_bearing = fll.calculate_segment_bearing(end_seg)
+            start_start_pt = arcpy.PointGeometry(start_seg.firstPoint)
+            end_end_pt = arcpy.PointGeometry(end_seg.lastPoint)
+            print(dir(start_start_pt))
+            print(end_end_pt.WKT)
+            new_start_end_pt = start_start_pt.pointFromAngleAndDistance(start_bearing, extension_distance)
+            new_end_end_pt = end_end_pt.pointFromAngleAndDistance(end_bearing, extension_distance)
+            segID = 0
+            part_number = 0
+            all_parts = []
+            for part in linegeo:
+                part_list = []
+                point_number = 0
+                for point in linegeo.getPart(part_number):
+                    if part_number == 0 and point_number == 0:
+                        point_number += 1
+                        part_list.append(new_start_end_pt)
+                    if point:
+                        part_list.append(point)
+                all_parts.append(part_list)
+            all_parts[-1].append(new_end_end_pt)
+            new_line = arcpy.Polyline(all_parts)
+            row = fll.copy_altered_row(singleline, fields, f_dict, {"SHAPE@": new_line})
+            insertCursor.insertRow(row)
+            if lineCounter % 500 == 0:
+                fll.arc_print("Iterated through and split feature " + str(lineCounter) + ".", True)
+    #             except Exception as e:
+    #                 fll.arc_print("Failed to iterate through and a split feature " + str(lineCounter) + ".", True)
+    #                 fll.arc_print(e.args[0])
+    #         del cursor, insertCursor, fields, preFields, OutWorkspace, lineCounter
+    #         fll.arc_print("Script Completed Successfully.", True)
+    # except arcpy.ExecuteError:
+    #     fll.arc_print(arcpy.GetMessages(2))
+    # except Exception as e:
+    #     fll.arc_print(e.args[0])
 
         # End do_analysis function
 
@@ -132,7 +133,7 @@ if __name__ == '__main__':
 
     FeatureClass = arcpy.GetParameterAsText(0)
     ExtensionDistance = float(arcpy.GetParameter(1))
-    PostExtensionIntegration = bool(arcpy.GetParametrAsText(2))
+    PostExtensionIntegration = bool(arcpy.GetParameterAsText(2))
     PostExtensionIntegration = bool(arcpy.GetParameterAsText(2))
     IntegrationTolerance = float(arcpy.GetParameterAsText(3))
     EndSamplingPercentage = float(arcpy.GetParameter(4))

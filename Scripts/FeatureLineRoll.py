@@ -74,6 +74,7 @@ def feature_line_roll(in_fc, extension_distance, post_extension_integration, int
     fields = ["SHAPE@"] + preFields
     cursor = arcpy.da.SearchCursor(in_fc, fields)
     f_dict = fll.construct_index_dict(fields)
+    sr = arcpy.Describe(in_fc).spatialReference
     with arcpy.da.InsertCursor(out_fc, fields) as insertCursor:
         fll.arc_print("Established insert cursor for " + str(FileName) + ".", True)
         lineCounter = 0
@@ -84,12 +85,13 @@ def feature_line_roll(in_fc, extension_distance, post_extension_integration, int
             linegeo = singleline[f_dict["SHAPE@"]]
             # Function splits line geometry based on method and split value
             start_seg, end_seg = get_line_ends(linegeo, float(end_sampling_percentage), True)
+            print(start_seg.length,end_seg.length)
             start_bearing  = fll.calculate_segment_bearing(start_seg)
             end_bearing = fll.calculate_segment_bearing(end_seg)
-            start_start_pt = arcpy.PointGeometry(start_seg.firstPoint)
-            end_end_pt = arcpy.PointGeometry(end_seg.lastPoint)
-            print(dir(start_start_pt))
-            print(end_end_pt.WKT)
+            start_start_pt = arcpy.PointGeometry(start_seg.firstPoint, sr)
+            end_end_pt = arcpy.PointGeometry(end_seg.lastPoint, sr)
+            print(dir(end_end_pt))
+            print(start_bearing, end_bearing)
             new_start_end_pt = start_start_pt.pointFromAngleAndDistance(start_bearing, extension_distance)
             new_end_end_pt = end_end_pt.pointFromAngleAndDistance(end_bearing, extension_distance)
             segID = 0
@@ -100,13 +102,14 @@ def feature_line_roll(in_fc, extension_distance, post_extension_integration, int
                 point_number = 0
                 for point in linegeo.getPart(part_number):
                     if part_number == 0 and point_number == 0:
-                        point_number += 1
-                        part_list.append(new_start_end_pt)
+                        part_list.append(new_start_end_pt.getPart(0))
                     if point:
                         part_list.append(point)
+                    point_number += 1
                 all_parts.append(part_list)
-            all_parts[-1].append(new_end_end_pt)
-            new_line = arcpy.Polyline(all_parts)
+            all_parts[-1].append(new_end_end_pt.getPart(0))
+            print(all_parts)
+            new_line = arcpy.Polyline(all_parts, sr)
             row = fll.copy_altered_row(singleline, fields, f_dict, {"SHAPE@": new_line})
             insertCursor.insertRow(row)
             if lineCounter % 500 == 0:

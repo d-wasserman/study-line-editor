@@ -338,7 +338,7 @@ def calculate_segment_bearing(shape_obj):
     last_y = last_point.Y
     dx = last_x - first_x
     dy = last_y - first_y
-    rads = math.atan2(dy, dx)
+    rads = math.atan2(dy, dx) # Relative to North
     angle = math.degrees(rads)
     return angle
 
@@ -349,11 +349,15 @@ def calculate_line_bearing(in_fc, field, convert_azimuth=False):
      @param - convert_azimuth - convert the bearing from 0 to 360 degrees"""
     add_new_field(in_fc, field, "DOUBLE")
     return_oid_bearing_dict = {}
+    sr_type = arcpy.Describe(in_fc).spatialReference.type
     with arcpy.da.UpdateCursor(in_fc, ["OID@", "SHAPE@", field]) as cursor:
         for row in cursor:
             ObjectID = row[0]
             shape = row[1]
-            angle = calculate_segment_bearing(shape)
+            if sr_type == "Geographic":
+                angle = arc_calculate_segment_bearing(shape)
+            else:
+                angle = calculate_segment_bearing(shape) #TODO speed test - use planar method vs. this.
             if convert_azimuth:
                 angle = convert_to_azimuth(angle)
             row[2] = angle

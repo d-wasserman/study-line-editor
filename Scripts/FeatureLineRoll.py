@@ -50,8 +50,7 @@ def get_line_ends(linegeometry, pull_value, percentage=False):
     return start_segment, end_segment
 
 
-def feature_line_roll(in_fc, extension_distance, post_extension_integration, integration_tolerance,
-                      end_sampling_percentage, out_fc):
+def feature_line_roll(in_fc, extension_distance, end_sampling_percentage, out_fc):
     """Take a feature line and extend its end points based on the angle implied by a sample of the line identified
     from its start and end point. This tool has an optional ability to use the Integrate geoprocessing tools after
     line extensions to match the lines ahead of its vertex.
@@ -59,8 +58,6 @@ def feature_line_roll(in_fc, extension_distance, post_extension_integration, int
     ---------------------
     in_fc - Line Geometry- input arc polyline to extend/roll
     extension_distance - the distance to extend the line in both directions (units of projection)
-    post_extension_integration- if true, the integrate tool will be run post extension
-    integration_tolerance - the distance vertices will be merged of the rolling network to the original
     end_sampling_percentage - the length segment to sample end from in current projection units
     out_fc - output feature class with extended lines based on sampling of end segments
     """
@@ -110,6 +107,7 @@ def feature_line_roll(in_fc, extension_distance, post_extension_integration, int
                     all_parts[-1].append(new_end_end_pt.getPart(0))
                     all_pt_array = arcpy.Array(all_parts)
                     new_line = arcpy.Polyline(all_pt_array, sr)
+                    fll.arc_print(all_parts)
                     row = fll.copy_altered_row(singleline, fields, f_dict, {"SHAPE@": new_line})
                     insertCursor.insertRow(row)
                     if lineCounter % 500 == 0:
@@ -117,11 +115,6 @@ def feature_line_roll(in_fc, extension_distance, post_extension_integration, int
                 except Exception as e:
                     fll.arc_print("Failed to iterate through features.", True)
                     fll.arc_print(e.args[0])
-        if post_extension_integration:
-            fll.arc_print("Conducting post-extension integrate to original input copy.")
-            in_fc_temp = "in_memory/temp_copy"
-            arcpy.CopyFeatures_management(in_fc,in_fc_temp)
-            arcpy.Integrate_management([[out_fc,1],[in_fc_temp,2]] ,integration_tolerance)
         fll.arc_print("Script Completed Successfully.", True)
     except arcpy.ExecuteError:
         fll.arc_print(arcpy.GetMessages(2))
@@ -140,9 +133,7 @@ if __name__ == '__main__':
 
     FeatureClass = arcpy.GetParameterAsText(0)
     ExtensionDistance = float(arcpy.GetParameter(1))
-    PostExtensionIntegration = bool(arcpy.GetParameterAsText(2))
-    IntegrationTolerance = float(arcpy.GetParameterAsText(3))
     EndSamplingPercentage = float(arcpy.GetParameter(4))
     OutFeatureClass = arcpy.GetParameterAsText(5)
-    feature_line_roll(FeatureClass, ExtensionDistance, PostExtensionIntegration, IntegrationTolerance,
+    feature_line_roll(FeatureClass, ExtensionDistance,
                       EndSamplingPercentage, OutFeatureClass)

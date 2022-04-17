@@ -8,6 +8,8 @@ This repository holds a collection of easy to use ArcGIS Geoprocessing scripts (
 
 * Feature Line Corridor Assembly - will add corridor ids to an output line network for all lines that are parallel within a tolerance and spatially connected/contiguous. 
 
+* Feature Line Role - Will extend a polyline based on the sampling of the line near its end points. 
+
 In depth descriptions, are provided below. 
 
 # Feature Line Split

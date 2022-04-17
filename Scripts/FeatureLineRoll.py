@@ -117,7 +117,11 @@ def feature_line_roll(in_fc, extension_distance, post_extension_integration, int
                 except Exception as e:
                     fll.arc_print("Failed to iterate through features.", True)
                     fll.arc_print(e.args[0])
-
+        if post_extension_integration:
+            fll.arc_print("Conducting post-extension integrate to original input copy.")
+            in_fc_temp = "in_memory/temp_copy"
+            arcpy.CopyFeatures_management(in_fc,in_fc_temp)
+            arcpy.Integrate_management([[out_fc,1],[in_fc_temp,2]] ,integration_tolerance)
         fll.arc_print("Script Completed Successfully.", True)
     except arcpy.ExecuteError:
         fll.arc_print(arcpy.GetMessages(2))

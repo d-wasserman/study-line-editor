@@ -85,8 +85,8 @@ def feature_line_roll(in_fc, extension_distance, end_sampling_percentage, out_fc
                     linegeo = singleline[f_dict["SHAPE@"]]
                     # Function splits line geometry based on method and split value
                     start_seg, end_seg = get_line_ends(linegeo, float(end_sampling_percentage), True)
-                    start_bearing  = fll.calculate_segment_bearing(start_seg)
-                    end_bearing = fll.calculate_segment_bearing(end_seg)
+                    start_bearing  = fll.convert_to_azimuth(fll.calculate_segment_bearing(start_seg))
+                    end_bearing = fll.convert_to_azimuth(fll.calculate_segment_bearing(end_seg))
                     start_start_pt = arcpy.PointGeometry(start_seg.firstPoint, sr)
                     end_end_pt = arcpy.PointGeometry(end_seg.lastPoint, sr)
                     new_start_end_pt = start_start_pt.pointFromAngleAndDistance(start_bearing, extension_distance)
@@ -104,10 +104,10 @@ def feature_line_roll(in_fc, extension_distance, end_sampling_percentage, out_fc
                                 part_list.append(point)
                             point_number += 1
                         all_parts.append(part_list)
+                        part_number += 1
                     all_parts[-1].append(new_end_end_pt.getPart(0))
                     all_pt_array = arcpy.Array(all_parts)
                     new_line = arcpy.Polyline(all_pt_array, sr)
-                    fll.arc_print(all_parts)
                     row = fll.copy_altered_row(singleline, fields, f_dict, {"SHAPE@": new_line})
                     insertCursor.insertRow(row)
                     if lineCounter % 500 == 0:
@@ -133,7 +133,7 @@ if __name__ == '__main__':
 
     FeatureClass = arcpy.GetParameterAsText(0)
     ExtensionDistance = float(arcpy.GetParameter(1))
-    EndSamplingPercentage = float(arcpy.GetParameter(4))
-    OutFeatureClass = arcpy.GetParameterAsText(5)
+    EndSamplingPercentage = float(arcpy.GetParameter(2))
+    OutFeatureClass = arcpy.GetParameterAsText(3)
     feature_line_roll(FeatureClass, ExtensionDistance,
                       EndSamplingPercentage, OutFeatureClass)

@@ -316,6 +316,31 @@ def convert_to_azimuth(angle):
         azimuth_angles % 360
     return azimuth_angles
 
+def arc_calculate_segment_bearing(shape_obj, method="GEODESIC"):
+    """Calculate the bearing from a single shape object and return the angle.
+    @param - shape object from arcpy for a polyline. Uses Arc methods.
+    returns - angle - float - angle in degrees (not azimuth)"""
+    sr = shape_obj.spatialReference
+    first_point = arcpy.PointGeometry(shape_obj.firstPoint, sr)
+    last_point = arcpy.PointGeometry(shape_obj.lastPoint, sr)
+    angle, dist = first_point.angleAndDistanceTo(last_point, method)
+    return angle
+
+def calculate_segment_bearing(shape_obj):
+    """Calculate the bearing from a single shape object and return the angle. Assumes projected coords.
+    @param - shape object from arcpy for a polyline
+    returns - angle - float - angle in degrees (not azimuth)"""
+    first_point = shape_obj.firstPoint
+    last_point = shape_obj.lastPoint
+    first_x = first_point.X
+    first_y = first_point.Y
+    last_x = last_point.X
+    last_y = last_point.Y
+    dx = last_x - first_x
+    dy = last_y - first_y
+    rads = math.atan2(dy, dx) # Relative to North
+    angle = math.degrees(rads)
+    return angle
 
 def calculate_line_bearing(in_fc, field, convert_azimuth=False):
     """Adds a new field and update it to provide a line bearing in degrees.
@@ -324,19 +349,15 @@ def calculate_line_bearing(in_fc, field, convert_azimuth=False):
      @param - convert_azimuth - convert the bearing from 0 to 360 degrees"""
     add_new_field(in_fc, field, "DOUBLE")
     return_oid_bearing_dict = {}
+    sr_type = arcpy.Describe(in_fc).spatialReference.type
     with arcpy.da.UpdateCursor(in_fc, ["OID@", "SHAPE@", field]) as cursor:
         for row in cursor:
             ObjectID = row[0]
-            first_point = row[1].firstPoint
-            last_point = row[1].lastPoint
-            first_x = first_point.X
-            first_y = first_point.Y
-            last_x = last_point.X
-            last_y = last_point.Y
-            dx = last_x - first_x
-            dy = last_y - first_y
-            rads = math.atan2(dy, dx)
-            angle = math.degrees(rads)
+            shape = row[1]
+            if sr_type == "Geographic":
+                angle = arc_calculate_segment_bearing(shape)
+            else:
+                angle = calculate_segment_bearing(shape) #TODO speed test - use planar method vs. this.
             if convert_azimuth:
                 angle = convert_to_azimuth(angle)
             row[2] = angle
@@ -386,7 +407,48 @@ def find_smallest_angle_column(df, bearing_column_1, bearing_column_2, new_field
     ), axis=1)
     return df
 
+def get_angle_difference(angle, difference=90):
+    """Given an azimuth angle (0-360), it will return the two azimuth angles (0-360) as a tuple that are perpendicular to it."""
+    angle_lower, angle_higher = (angle + difference) % 360, (angle - difference) % 360
+    return (angle_lower, angle_higher)
 
+def translate_point(point, angle, radius, is_degree=True):
+    """Passed a point object (arcpy) this funciton will translate it and
+     return a modified clone based on a given angle out a set radius."""
+    if is_degree:
+        angle = math.radians(angle)
+    new_x = math.cos(angle) * radius + point.X
+    new_y = math.sin(angle) * radius + point.Y
+    new_point = arcpy.Point(new_x, new_y)
+    return new_point
+
+def sample_line_from_center(polyline, length_to_sample):
+    """Takes a polyline and samples it a target length using the segmentAlongLine method."""
+    line_length = float(polyline.length)
+    half_way_point = float(polyline.length) / 2
+    start_point = half_way_point - length_to_sample / 2
+    end_point = half_way_point + length_to_sample / 2
+    if line_length <= length_to_sample / 2:
+        start_point = 0
+        end_point = line_length
+    segment_returned = polyline.segmentAlongLine(start_point, end_point)
+    return segment_returned
+
+def generate_whisker_from_polyline(linegeometry, whisker_width):
+    """This function will take an ArcPolyline and a target whisker width,and it will create a new line from the
+    lines centroid (or label point) that is perpendicular to the bearing of the current polyline. """
+    segment_returned = None
+    center = linegeometry.centroid
+    sr = linegeometry.spatialReference
+    line_heading = arc_calculate_segment_bearing(linegeometry)
+    line_heading = convert_to_azimuth(line_heading)
+    perpendicular_angle_start, perpendicular_angle_end = get_angle_difference(line_heading)
+    point_start = translate_point(center, perpendicular_angle_start, whisker_width)
+    point_end = translate_point(center, perpendicular_angle_end, whisker_width)
+    inputs_line = arcpy.Array([point_start, point_end])
+    segment_returned = arcpy.Polyline(inputs_line, sr)
+    # This function fails if the line is shorter than the pull value, in this case no geometry is returned.
+    return segment_returned
 # End do_analysis function
 
 # This test allows the script to be used from the operating

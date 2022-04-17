@@ -8,6 +8,8 @@ This repository holds a collection of easy to use ArcGIS Geoprocessing scripts (
 
 * Feature Line Corridor Assembly - will add corridor ids to an output line network for all lines that are parallel within a tolerance and spatially connected/contiguous. 
 
+* Feature Line Role - Will extend a polyline based on the sampling of the line near its end points. 
+
 In depth descriptions, are provided below. 
 
 # Feature Line Split
@@ -89,7 +91,6 @@ Works in ArcGIS Pro (2to3 compatible)
 <b>Summary</b>
  
 This scripting tool will take an input feature line, and remove a target amount of length from the ends of the lines (pulling them back).  Each line feature will be copied once. This version of the script will carry over any of the fields of the original feature class using cursors, it will only return pulled back geometries in the new feature class. 
-This scripting tool will take an input feature line, and remove a target amount of length from the ends of the lines (pulling them back). Each line feature will be copied once. This version of the script will carry over any of the fields of the original feature class using cursors, it will only return pulled back geometries in the new feature class. 
 
 <b>Usage</b>
  
@@ -284,6 +285,73 @@ Works in ArcGIS Pro (2to3 compatible). This tool requires the pandas library to 
 <td class="info">Parallel_Threshold</td>
 <td class="info" align="left">
 <span style="font-weight: bold">Dialog Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><P><SPAN>The threshold of angles in degrees between parallel lines and non-parallel lines. </SPAN></P></DIV></DIV><p><span class="noContent">There is no python reference for this parameter.</span></p></td>
+<td class="info" align="left">String</td>
+</tr>
+<tr>
+</tbody>
+</table>
+
+
+# Feature Line Roll
+
+<b>Summary</b>
+                                                         
+This tool will take an input feature line and extend its end points based on the angle implied by a sample of its start and end points. This enables the output line features to maintain the original attributes, but be extended in both directions to enable rolling linear statistics. 
+
+<b>Usage</b>
+ 
+The goal of this script  is to enable linear rolling windows through the extensions of segments in a line feature class. The intended uses for this are: 
+
+* Aid in the creation of rolling window segments for linear rolling stats
+
+* Allow proximity analysis for point features that blend intersections. 
+
+* Provide a tool for batch editing and segmentation of polylines. 
+
+Works in ArcGIS Pro. This tool requires the pandas library to work. 
+
+<b>Parameters</b>
+
+<table width="100%" border="0" cellpadding="5">
+<tbody>
+<tr>
+<th width="30%">
+<b>Parameter</b>
+</th>
+<th width="50%">
+<b>Explanation</b>
+</th>
+<th width="20%">
+<b>Data Type</b>
+</th>
+</tr>
+<tr>
+<td class="info">Input Feature Line</td>
+<td class="info" align="left">
+<span style="font-weight: bold">Dialog Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><P><SPAN>The input feature class whose extends will be extended based on some determined distance in the current projection.
+ </SPAN></P></DIV></DIV><div class="noContent" style="text-align:center; margin-top: -1em">___________________</div><br />
+<span style="font-weight: bold">Python Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><P><SPAN>This tool depends on the pandas Python Library.</SPAN></P></DIV></DIV></td>
+<td class="info" align="left">Feature Layer</td>
+</tr>
+<tr>
+<td class="info">Extension Distance</td>
+<td class="info" align="left">
+<span style="font-weight: bold">Dialog Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><P><SPAN>The extension distance in the units of the current projection to extend the line.
+</SPAN></P></DIV></DIV><p><span class="noContent">There is no python reference for this parameter.</span></p></td>
+<td class="info" align="left">Long</td>
+</tr>
+<tr>
+<td class="info">End Sampling Percentage</td>
+<td class="info" align="left">
+<span style="font-weight: bold">Dialog Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><DIV><P><SPAN>The percentage of the ends of the polyline to use for bearing calculations informing the extension. Expressed as a ratio. 
+ </SPAN></P><P><SPAN /></P></DIV></DIV></DIV><p><span class="noContent">There is no python reference for this parameter.</span></p></td>
+<td class="info" align="left">Float</td>
+</tr>
+<tr>
+<td class="info">Output Feature Line</td>
+<td class="info" align="left">
+<span style="font-weight: bold">Dialog Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><P><SPAN>This is the output polyline feature class that will be created by this tool with extended lines. It should have the fields of the original feature class derived by an insert cursor. 
+</SPAN></P></DIV></DIV><p><span class="noContent">There is no python reference for this parameter.</span></p></td>
 <td class="info" align="left">String</td>
 </tr>
 <tr>

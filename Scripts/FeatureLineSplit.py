@@ -32,9 +32,12 @@ def split_line_geometry(linegeometry, split_value, split_method="LENGTH", best_f
     """This function will take an ArcPolyline, a split value, a split method of either 'LENGTH' or 'SEGMENT COUNT', and
     boolean that determines if the lines split are the best of fit based on the length. The function returns a list of
     line geometries whose length and number are determined by the split value, split method, and best fit settings.
-    Line Geometry- arc polyline/split value- the length or desired number of segments, /split method- determines if
-    split value is treated as a length target or segment count target/ best fit bool determines if the length is rounded
-    to be segments of equal length."""
+    Parameters
+    ----------------
+    linegeometry - arc polyline
+    split value- the length or desired number of segments
+    split method- determines if split value is treated as a length target or segment count target
+    best fit bool determines if the length is roundedto be segments of equal length."""
     segment_list = []
     line_length = float(linegeometry.length)
     if str(split_method).upper() == "LENGTH" and not best_fit_bool:
@@ -57,7 +60,15 @@ def split_line_geometry(linegeometry, split_value, split_method="LENGTH", best_f
 
 def feature_line_split(in_fc, out_count_value, out_count_field, split_method, best_fit_bool, out_fc):
     """ This function will split each feature in a feature class into a desired number of equal length segments based
-    on a specified distance or target segment count based on an out count value or field."""
+    on a specified distance or target segment count based on an out count value or field.
+    Parameters
+    ----------------
+    in_fc - input arc polyline to split
+    out_count_value - the length or desired number of segments
+    out_count_field - optional field to use for custom splitting using the desired type of out_count_value/split method
+    split method- determines if split value is treated as a length target or segment count target
+    best fit bool determines if the length is roundedto be segments of equal length.
+    out_fc - output split feature class"""
     try:
         arcpy.env.overwriteOutput = True
         OutWorkspace = os.path.split(out_fc)[0]

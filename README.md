@@ -294,8 +294,8 @@ Works in ArcGIS Pro (2to3 compatible). This tool requires the pandas library to 
 # Feature Line Roll
 
 <b>Summary</b>
- 
-This scripting tool will take an input feature line, and split its line features into the number of target segments or target distance specified by the target specified by the input integer or input field. Each line feature will be split into  the number of segments specified, each of equal length. This version of the script will  carry over any of the fields of the original feature class using cursors, it will only split the geometry into equal length segments for a number of segments for each line equal to the target count. 
+                                                         
+This tool will take an input feature line and extend its end points based on the angle implied by a sample of its start and end points. This enables the output line features to maintain the original attributes, but be extended in both directions to enable rolling linear statistics. 
 
 <b>Usage</b>
  
@@ -325,7 +325,7 @@ Works in ArcGIS Pro. This tool requires the pandas library to work.
 </th>
 </tr>
 <tr>
-<td class="info">Input_Feature_Line</td>
+<td class="info">Input Feature Line</td>
 <td class="info" align="left">
 <span style="font-weight: bold">Dialog Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><P><SPAN>The input feature class whose extends will be extended based on some determined distance in the current projection.
  </SPAN></P></DIV></DIV><div class="noContent" style="text-align:center; margin-top: -1em">___________________</div><br />

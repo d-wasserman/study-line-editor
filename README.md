@@ -1,3 +1,4 @@
+# Toolbox Summary
 This repository holds a collection of easy to use ArcGIS Geoprocessing scripts (10.3+ and Pro) intended to provide automated line editing routines to help create useful study geometries. The tools are described below. 
 
 * Feature Line Split - create a new feature class that has input lines split into an arbitrary number of segments. 
@@ -18,10 +19,7 @@ Wasserman, D. Study Line Editor. (2019) GitHub repository, GitHub https://github
 
 It is polite to cite. 
 
-# Tool Descriptions
-
 In depth descriptions, are provided below. 
-
 
 # Feature Line Split
 

@@ -10,7 +10,18 @@ This repository holds a collection of easy to use ArcGIS Geoprocessing scripts (
 
 * Feature Line Roll - Will extend a polyline based on the sampling of the line near its end points. 
 
+# Citations 
+
+If you use the tool in academic research or as part of professional reports, please cite the tool as the following:
+
+Wasserman, D. Study Line Editor. (2019) GitHub repository, GitHub https://github.com/d-wasserman/study-line-editor. 
+
+It is polite to cite. 
+
+# Tool Descriptions
+
 In depth descriptions, are provided below. 
+
 
 # Feature Line Split
 
@@ -358,8 +369,4 @@ Works in ArcGIS Pro. This tool requires the pandas library to work.
 </tbody>
 </table>
 
-# Citations 
 
-If you use the tool in academic research or as part of professional reports, please cite the rule as the following:
-
-Wasserman, D. Study Line Editor. (2019) GitHub repository, GitHub https://github.com/d-wasserman/study-line-editor. 

@@ -311,11 +311,11 @@ This tool will take an input feature line and extend its end points based on the
  
 The goal of this script  is to enable linear rolling windows through the extensions of segments in a line feature class. The intended uses for this are: 
 
-* Aid in the creation of rolling window segments for linear rolling stats
+* Aid in the creation of rolling window segments for linear rolling stats.
 
 * Allow proximity analysis for point features that blend intersections. 
 
-* Provide a tool for batch editing and segmentation of polylines. 
+* Provide a tool to assist with Vision Zero and related safety analysis. 
 
 Works in ArcGIS Pro. This tool requires the pandas library to work. 
 

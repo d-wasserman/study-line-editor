@@ -73,8 +73,10 @@ def feature_line_roll(in_fc, extension_distance, end_sampling_percentage, out_fc
         cursor = arcpy.da.SearchCursor(in_fc, fields)
         f_dict = fll.construct_index_dict(fields)
         sr = arcpy.Describe(in_fc).spatialReference
+        is_projected = sr.type =="Projected"
+        if not is_projected:
+            arcpy.AddWarning("This tool works best on a projected coordinate system. Please reprojected for best results.")
         fll.arc_print("Extending lines based on heading calculations...")
-
         with arcpy.da.InsertCursor(out_fc, fields) as insertCursor:
             lineCounter = 0
             fll.arc_print("Established insert cursor for " + str(FileName) + ".", True)
@@ -85,12 +87,13 @@ def feature_line_roll(in_fc, extension_distance, end_sampling_percentage, out_fc
                     linegeo = singleline[f_dict["SHAPE@"]]
                     # Function splits line geometry based on method and split value
                     start_seg, end_seg = get_line_ends(linegeo, float(end_sampling_percentage), True)
+                    method = "PLANAR" if is_projected else "GEODESIC"
                     start_bearing  = fll.convert_to_azimuth(fll.calculate_segment_bearing(start_seg))
                     end_bearing = fll.convert_to_azimuth(fll.calculate_segment_bearing(end_seg))
                     start_start_pt = arcpy.PointGeometry(start_seg.firstPoint, sr)
                     end_end_pt = arcpy.PointGeometry(end_seg.lastPoint, sr)
-                    new_start_end_pt = start_start_pt.pointFromAngleAndDistance(start_bearing, extension_distance)
-                    new_end_end_pt = end_end_pt.pointFromAngleAndDistance(end_bearing, extension_distance)
+                    new_start_end_pt = start_start_pt.pointFromAngleAndDistance(start_bearing, extension_distance, method)
+                    new_end_end_pt = end_end_pt.pointFromAngleAndDistance(end_bearing, extension_distance, method)
                     segID = 0
                     part_number = 0
                     all_parts = []

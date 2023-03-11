@@ -1,9 +1,10 @@
 # Name: FeatureLineSplit.py
 # Purpose: Take a feature class and proportionally split each unique feature line into segments of a target count
 # or target distance. Similar to editing tools done manually.This version of the tool will join the original fields
-# of the old feature class.
+# of the old feature class. This tool also has the ability to split a line so that it includes a percentage overlap
+# with other segments based 
 # Author: David Wasserman
-# Last Modified: 10/20/2019
+# Last Modified: 3/8/2023
 # Copyright: David Wasserman
 # Python Version:   2.7/3.6
 # --------------------------------
@@ -27,7 +28,7 @@ import linelibrary as fll
 
 
 # Function Definitions
-@fll.arc_tool_report
+# @fll.arc_tool_report
 def split_line_geometry(linegeometry, split_value, split_method="LENGTH", best_fit_bool=True):
     """This function will take an ArcPolyline, a split value, a split method of either 'LENGTH' or 'SEGMENT COUNT', and
     boolean that determines if the lines split are the best of fit based on the length. The function returns a list of
@@ -35,26 +36,18 @@ def split_line_geometry(linegeometry, split_value, split_method="LENGTH", best_f
     Parameters
     ----------------
     linegeometry - arc polyline
-    split value- the length or desired number of segments
-    split method- determines if split value is treated as a length target or segment count target
-    best fit bool determines if the length is roundedto be segments of equal length."""
+    split_value - the length in current projection or desired number of segments
+    split_method - determines if split value is treated as a length target or segment count target
+    best_fit_bool -  determines if the length is rounded to be segments of equal length.
+    Returns
+    ------------
+    segment_list - list of split geometries.
+    """
     segment_list = []
-    line_length = float(linegeometry.length)
-    if str(split_method).upper() == "LENGTH" and not best_fit_bool:
-        segment_total = int(math.ceil(line_length / float(split_value)))
-        for line_seg_index in range(0, segment_total):
-            start_position = (line_seg_index * (int(split_value)))
-            end_position = (line_seg_index + 1) * int(split_value)
-            seg = linegeometry.segmentAlongLine(start_position, end_position)
-            segment_list.append(seg)
+    if str(split_method).upper() == "LENGTH":
+        segment_list = fll.split_segment_by_length(linegeometry,split_value,best_fit_bool)
     else:
-        segmentation_value = int(round(max([1, split_value])))
-        if str(split_method).upper() == "LENGTH" and best_fit_bool:
-            segmentation_value = int(max([1, round(line_length / float(split_value))]))
-        for line_seg_index in range(0, segmentation_value):
-            seg = linegeometry.segmentAlongLine((line_seg_index / float(segmentation_value)),
-                                                ((line_seg_index + 1) / float(segmentation_value)), True)
-            segment_list.append(seg)
+        segment_list = fll.split_segment_by_count(linegeometry,split_value)
     return segment_list
 
 

@@ -85,7 +85,7 @@ def arc_tool_report(function=None, arcToolMessageBool=False, arcProgressorBool=F
                     arcpy.SetProgressorLabel("     Output(s):{0}".format(str(func_result)))
                 return func_result
             except Exception as e:
-                arcpy.AddMessage(
+                arcpy.AddWarning(
                     "{0} - function failed -|- Function arguments were:{1}.".format(str(function.__name__),
                                                                                     str(args)))
                 print(
@@ -449,6 +449,52 @@ def generate_whisker_from_polyline(linegeometry, whisker_width):
     segment_returned = arcpy.Polyline(inputs_line, sr)
     # This function fails if the line is shorter than the pull value, in this case no geometry is returned.
     return segment_returned
+
+def split_segment_by_length(linegeometry,split_value,best_fit_bool=True):
+    """This function will take an ArcPolyline, a split value of a target length for a split segment, and
+    boolean that determines if the lines split are the best of fit based on the length. 
+    Parameters
+    ----------------
+    linegeometry - arc polyline
+    split_value - the length in the current projection
+    best_fit_bool -  determines if the length is rounded to be segments of equal length.
+    Returns
+    ----------------
+    segment_list - list of split geometries."""
+    segment_list = []
+    line_length = float(linegeometry.length)
+    if not best_fit_bool:
+        segment_total = int(math.ceil(line_length / float(split_value)))
+        percent_split = False
+    else:
+        segmentation_value = int(max([1, round(line_length / float(split_value))]))
+        segment_total = segmentation_value
+        percent_split = True
+    for line_seg_index in range(0, segment_total):
+        start_position = (line_seg_index * float(split_value)) if not percent_split else (line_seg_index / float(segmentation_value))
+        end_position = ((line_seg_index + 1) * float(split_value)) if not percent_split else ((line_seg_index +1) / float(segmentation_value))
+        arcpy.AddMessage(str(start_position)+"."+str(end_position)+"."+str(percent_split))
+        seg = linegeometry.segmentAlongLine(start_position, end_position, percent_split)
+        segment_list.append(seg)
+    return segment_list
+
+def split_segment_by_count(linegeometry,split_count):
+    """This function will take an ArcPolyline, a split count for the number of lines to return. The function returns a list of
+    line geometries whose length and number are determined by the split value, split method, and best fit settings.
+    Parameters
+    ----------------
+    linegeometry - arc polyline
+    split_count - the count of the number of lines to return
+    Returns
+    ----------------
+    segment_list - list of split geometries."""
+    segment_list = []
+    segmentation_value = int(round(max([1, split_count])))
+    for line_seg_index in range(0, segmentation_value):
+        seg = linegeometry.segmentAlongLine((line_seg_index / float(segmentation_value)),
+                                                ((line_seg_index + 1) / float(segmentation_value)), True)
+        segment_list.append(seg)
+    return segment_list
 # End do_analysis function
 
 # This test allows the script to be used from the operating

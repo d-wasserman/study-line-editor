@@ -450,13 +450,14 @@ def generate_whisker_from_polyline(linegeometry, whisker_width):
     # This function fails if the line is shorter than the pull value, in this case no geometry is returned.
     return segment_returned
 
-def split_segment_by_length(linegeometry,split_value,best_fit_bool=True):
+def split_segment_by_length(linegeometry,split_value,overlap_percentage = 0, best_fit_bool=True):
     """This function will take an ArcPolyline, a split value of a target length for a split segment, and
     boolean that determines if the lines split are the best of fit based on the length. 
     Parameters
     ----------------
     linegeometry - arc polyline
     split_value - the length in the current projection
+    overlap_percentage - the degree of overlap as a percentage of the line length
     best_fit_bool -  determines if the length is rounded to be segments of equal length.
     Returns
     ----------------
@@ -471,13 +472,15 @@ def split_segment_by_length(linegeometry,split_value,best_fit_bool=True):
         segment_total = segmentation_value
         percent_split = True
     for line_seg_index in range(0, segment_total):
-        start_position = (line_seg_index * float(split_value)) if not percent_split else (line_seg_index / float(segmentation_value))
-        end_position = ((line_seg_index + 1) * float(split_value)) if not percent_split else ((line_seg_index +1) / float(segmentation_value))
+        line_seg_index_start = line_seg_index if overlap_percentage == 0  else max([0,float(line_seg_index)-float(overlap_percentage)])
+        start_position = (line_seg_index_start * float(split_value)) if not percent_split else (line_seg_index_start / float(segmentation_value))
+        line_seg_index_end = line_seg_index if overlap_percentage == 0  else min([segment_total,float(line_seg_index)+float(overlap_percentage)])
+        end_position = ((line_seg_index_end+ 1) * float(split_value)) if not percent_split else ((line_seg_index_end +1) / float(segmentation_value))
         seg = linegeometry.segmentAlongLine(start_position, end_position, percent_split)
         segment_list.append(seg)
     return segment_list
 
-def split_segment_by_count(linegeometry,split_count):
+def split_segment_by_count(linegeometry,split_count,overlap_percentage=0.0):
     """This function will take an ArcPolyline, a split count for the number of lines to return. The function returns a list of
     line geometries whose length and number are determined by the split value, split method, and best fit settings.
     Parameters
@@ -490,8 +493,10 @@ def split_segment_by_count(linegeometry,split_count):
     segment_list = []
     segmentation_value = int(round(max([1, split_count])))
     for line_seg_index in range(0, segmentation_value):
-        seg = linegeometry.segmentAlongLine((line_seg_index / float(segmentation_value)),
-                                                ((line_seg_index + 1) / float(segmentation_value)), True)
+        line_seg_index_start = line_seg_index if overlap_percentage == 0  else max([0,float(line_seg_index)-float(overlap_percentage)])
+        line_seg_index_end = line_seg_index if overlap_percentage == 0  else min([segmentation_value,float(line_seg_index)+float(overlap_percentage)])
+        seg = linegeometry.segmentAlongLine((line_seg_index_start / float(segmentation_value)),
+                                                ((line_seg_index_end+ 1) / float(segmentation_value)), True)
         segment_list.append(seg)
     return segment_list
 # End do_analysis function

@@ -29,7 +29,7 @@ import linelibrary as fll
 
 # Function Definitions
 # @fll.arc_tool_report
-def split_line_geometry(linegeometry, split_value, split_method="LENGTH", best_fit_bool=True):
+def split_line_geometry(linegeometry, split_value, split_method="LENGTH", overlap_percentage=0, best_fit_bool=True):
     """This function will take an ArcPolyline, a split value, a split method of either 'LENGTH' or 'SEGMENT COUNT', and
     boolean that determines if the lines split are the best of fit based on the length. The function returns a list of
     line geometries whose length and number are determined by the split value, split method, and best fit settings.
@@ -38,6 +38,7 @@ def split_line_geometry(linegeometry, split_value, split_method="LENGTH", best_f
     linegeometry - arc polyline
     split_value - the length in current projection or desired number of segments
     split_method - determines if split value is treated as a length target or segment count target
+    overlap_percentage - the amount lines will overlap in terms of a percentage of the target length. No overlap at end points.
     best_fit_bool -  determines if the length is rounded to be segments of equal length.
     Returns
     ------------
@@ -45,13 +46,13 @@ def split_line_geometry(linegeometry, split_value, split_method="LENGTH", best_f
     """
     segment_list = []
     if str(split_method).upper() == "LENGTH":
-        segment_list = fll.split_segment_by_length(linegeometry,split_value,best_fit_bool)
+        segment_list = fll.split_segment_by_length(linegeometry,split_value, overlap_percentage, best_fit_bool)
     else:
-        segment_list = fll.split_segment_by_count(linegeometry,split_value)
+        segment_list = fll.split_segment_by_count(linegeometry,split_value, overlap_percentage)
     return segment_list
 
 
-def feature_line_split(in_fc, out_count_value, out_count_field, split_method, best_fit_bool, out_fc):
+def feature_line_split(in_fc, out_count_value, out_count_field, split_method, overlap_percentage, best_fit_bool, out_fc):
     """ This function will split each feature in a feature class into a desired number of equal length segments based
     on a specified distance or target segment count based on an out count value or field.
     Parameters
@@ -59,8 +60,9 @@ def feature_line_split(in_fc, out_count_value, out_count_field, split_method, be
     in_fc - input arc polyline to split
     out_count_value - the length or desired number of segments
     out_count_field - optional field to use for custom splitting using the desired type of out_count_value/split method
-    split method- determines if split value is treated as a length target or segment count target
-    best fit bool determines if the length is roundedto be segments of equal length.
+    split_method- determines if split value is treated as a length target or segment count target
+    overlap_percentage - the amount lines will overlap in terms of a percentage of the target length. No overlap at end points.
+    best_fit_bool determines if the length is roundedto be segments of equal length.
     out_fc - output split feature class"""
     try:
         arcpy.env.overwriteOutput = True
@@ -82,7 +84,7 @@ def feature_line_split(in_fc, out_count_value, out_count_field, split_method, be
                     linegeo = singleline[f_dict["SHAPE@"]]
                     # Function splits line geometry based on method and split value
                     line_length = fll.line_length(singleline, out_count_field, out_count_value, f_dict)
-                    split_segment_list = split_line_geometry(linegeo, line_length, split_method, best_fit_bool)
+                    split_segment_list = split_line_geometry(linegeo, line_length, split_method, overlap_percentage, best_fit_bool)
                     segID = 0
                     for segment in split_segment_list:
                         try:
@@ -121,7 +123,8 @@ if __name__ == '__main__':
     Desired_Feature_Count = arcpy.GetParameter(1)
     Feature_Count_Field = arcpy.GetParameterAsText(2)
     Split_Method = arcpy.GetParameterAsText(3)
-    Best_Fit_Bool = arcpy.GetParameter(4)
-    OutFeatureClass = arcpy.GetParameterAsText(5)
-    feature_line_split(FeatureClass, Desired_Feature_Count, Feature_Count_Field, Split_Method, Best_Fit_Bool,
+    Overlap_Percentage = arcpy.GetParameter(4)
+    Best_Fit_Bool = arcpy.GetParameter(5)
+    OutFeatureClass = arcpy.GetParameterAsText(6)
+    feature_line_split(FeatureClass, Desired_Feature_Count, Feature_Count_Field, Split_Method, Overlap_Percentage, Best_Fit_Bool,
                        OutFeatureClass)

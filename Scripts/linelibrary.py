@@ -473,7 +473,6 @@ def split_segment_by_length(linegeometry,split_value,best_fit_bool=True):
     for line_seg_index in range(0, segment_total):
         start_position = (line_seg_index * float(split_value)) if not percent_split else (line_seg_index / float(segmentation_value))
         end_position = ((line_seg_index + 1) * float(split_value)) if not percent_split else ((line_seg_index +1) / float(segmentation_value))
-        arcpy.AddMessage(str(start_position)+"."+str(end_position)+"."+str(percent_split))
         seg = linegeometry.segmentAlongLine(start_position, end_position, percent_split)
         segment_list.append(seg)
     return segment_list

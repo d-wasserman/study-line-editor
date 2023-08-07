@@ -173,7 +173,7 @@ Works in ArcGIS Pro (2to3 compatible)
 
 <b>Summary</b>
 
-This scripting tool is intended to assist with tasks related to createing intelligence related to  right of way widths from vector polygons such as building footprints (distance to frontage), road bed polygons, or sidewalk trace polygons found by remote sensing/computer vision/deep learning techniques. This tools main purpose is to create whiskers that are perpendicular to the line being used to create them. Once these whsikers are made, they can be trimmed by arbitrary polygons (feature to line), and then used to determine the widths of various features. This is a tool that is intended to generalize to many transportation/urban planning workflows.
+This scripting tool is intended to assist with tasks related to createing intelligence related to  right of way widths from vector polygons such as building footprints (distance to frontage), road bed polygons, or sidewalk trace polygons found by remote sensing/computer vision/deep learning techniques. This tools main purpose is to create whiskers that are perpendicular to the line being used to create them. Once these whiskers are made, they can be trimmed by arbitrary polygons (feature to line), and then used to determine the widths of various features. This is a tool that is intended to generalize to many transportation/urban planning workflows.
 
 <b>Usage</b>
  
@@ -181,7 +181,7 @@ The goal of this script was to create whiskers (like cat whiskers), that can be 
 
 * Aid in determining right of way widths from roadbed polygons/sidewalk polygons. 
 
-* Determine the distance of a road from features perdicular to their centroids. 
+* Determine the distance of a road from features perpendicular to their centroids. 
 
 Works in ArcGIS Pro (2to3 compatible)
 

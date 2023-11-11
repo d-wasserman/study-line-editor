@@ -39,13 +39,19 @@ def pull_line_geometry(linegeometry, pull_value, end_point_bool=True, start_poin
     line_length = float(linegeometry.length)
     end_point_start_position = line_length
     start_point_start_position = 0
+    total_pull = 0
     try:
         if end_point_bool:
             end_point_start_position = line_length - pull_value
+            total_pull += pull_value
         if start_point_bool:
             start_point_start_position = 0 + pull_value
-        segment_returned = linegeometry.segmentAlongLine(start_point_start_position, end_point_start_position)
-    except:  # This function fails if the line is shorter than the pull value, in this case no geometry is returned.
+            total_pull += pull_value
+        if total_pull >= line_length:
+            segment_returned = None #"The total pull value is greater than the length of the line, returning None."
+        else:
+            segment_returned = linegeometry.segmentAlongLine(start_point_start_position, end_point_start_position)
+    except:  # Should the function failr, return null geometry. 
         return None
     return segment_returned
 
@@ -66,6 +72,7 @@ def feature_line_pull(in_fc, out_pull_value, out_pull_field, start_point_bool, e
         with arcpy.da.InsertCursor(out_fc, fields) as insertCursor:
             fll.arc_print("Established insert cursor for " + str(FileName) + ".", True)
             lineCounter = 0
+            null_counter = 0
             for singleline in cursor:
                 try:
                     segment_rows = []
@@ -76,6 +83,9 @@ def feature_line_pull(in_fc, out_pull_value, out_pull_field, start_point_bool, e
                                                                 fll.line_length(singleline, out_pull_field,
                                                                                 out_pull_value, f_dict),
                                                                 start_point_bool, end_point_bool)
+                    if split_segment_geometry is None:
+                        null_counter += 1
+                        # continue - # Uncomment to skip null geometries, otherwise empty geometries will be inserted.
                     segID = 0
                     try:
                         segID += 1
@@ -85,14 +95,15 @@ def feature_line_pull(in_fc, out_pull_value, out_pull_field, start_point_bool, e
                     except:
                         fll.arc_print("Could not iterate through line segment " + str(segID) + ".")
                         break
-
                     for row in segment_rows:
                         insertCursor.insertRow(row)
                     if lineCounter % 500 == 0:
-                        fll.arc_print("Iterated through and split feature " + str(lineCounter) + ".", True)
+                        fll.arc_print("Iterated through and pulled feature " + str(lineCounter) + ".", True)
                 except Exception as e:
-                    fll.arc_print("Failed to iterate through and a split feature " + str(lineCounter) + ".", True)
+                    fll.arc_print("Failed to iterate through and a pulled feature " + str(lineCounter) + ".", True)
                     fll.arc_print(e.args[0])
+            if null_counter > 0:
+                arcpy.AddWarning("There were " + str(null_counter) + " features that were shorter than the pull value.")
             del cursor, insertCursor, fields, preFields, OutWorkspace, lineCounter
             fll.arc_print("Script Completed Successfully.", True)
     except arcpy.ExecuteError:

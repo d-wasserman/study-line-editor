@@ -85,6 +85,12 @@ Works in ArcGIS Pro (2to3 compatible)
 <span style="font-weight: bold">Dialog Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><P><SPAN>If True and Length is the split method, the lines will be split into segments of length closest to the target determined by the value or field while not creating short end segments. It will result in lines closest to the target length but maintain lines of equal length in the output. </SPAN></P></DIV></DIV><p><span class="noContent">There is no python reference for this parameter.</span></p></td>
 <td class="info" align="left">Boolean</td>
 </tr>
+ <tr>
+<td class="info">Overlap Percentage</td>
+<td class="info" align="left">
+<span style="font-weight: bold">Dialog Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><P><SPAN>A target percentage to overlap split lines by. If set to 50% for example, lines split will overlap by 50% of their length across other split lines. </SPAN></P></DIV></DIV><p><span class="noContent">There is no python reference for this parameter.</span></p></td>
+<td class="info" align="left">Boolean</td>
+</tr>
 <tr>
 <td class="info">Output_Feature_Line</td>
 <td class="info" align="left">

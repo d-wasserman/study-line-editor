@@ -29,21 +29,33 @@ import linelibrary as fll
 # Function Definitions
 
 
-def feature_line_whisker(in_fc, out_whisker_width, out_whisker_field, sample_length, Out_FC):
-    """Take a feature class and generate whiskers that are perpendicular either to the lines start and end points, or
+def feature_line_whisker(in_fc, out_whisker_width, out_whisker_field, sample_length, out_fc):
+    """Take a feature class and generate "whiskers" that are perpendicular either to the lines start and end points, or
     a sample line extracted from the center portion of the input polyline feature.
-     This version of the tool will join the original fields."""
+     This version of the tool will join the original fields.
+     Parameters
+     -------------------
+    in_fc (FeatureClass): The input feature class containing the line geometries from which whiskers will be generated. It should consist of line features.
+    out_whisker_width (float): The width of each whisker. This value determines the perpendicular distance from the
+      line to the end of the whisker.
+    out_whisker_field (str): The name of the field in the output feature class where the whisker width will be stored.
+      This field will contain the value specified in out_whisker_width for each feature.
+    sample_length (float): The length of the line segment (sampled from the center of each input polyline) used to
+      generate the whiskers. This parameter defines the portion of the line used for whisker generation.
+    out_fc (FeatureClass): The output feature class where the geometries with whiskers will be saved. This feature class
+      will include the original attribute fields from in_fc, along with the new out_whisker_field.
+"""
     try:
         arcpy.env.overwriteOutput = True
-        OutWorkspace = os.path.split(Out_FC)[0]
-        FileName = os.path.split(Out_FC)[1]
+        OutWorkspace = os.path.split(out_fc)[0]
+        FileName = os.path.split(out_fc)[1]
         arcpy.CreateFeatureclass_management(OutWorkspace, FileName, "POLYLINE", in_fc, spatial_reference=in_fc,
                                             has_m="SAME_AS_TEMPLATE", has_z="SAME_AS_TEMPLATE")
         preFields = fll.get_fields(in_fc)
         fields = ["SHAPE@"] + preFields
         cursor = arcpy.da.SearchCursor(in_fc, fields)
         f_dict = fll.construct_index_dict(fields)
-        with arcpy.da.InsertCursor(Out_FC, fields) as insertCursor:
+        with arcpy.da.InsertCursor(out_fc, fields) as insertCursor:
             fll.arc_print("Established insert cursor for " + str(FileName) + ".", True)
             lineCounter = 0
             for singleline in cursor:

@@ -32,11 +32,13 @@ def assemble_corridors_from_network(input_network, output_network, connected_ran
                                     near_table=None):
     """This tool normalizes center line networks by assembling them into continuous parallel corridors and
     attaching a corridor ID that can be used with a dissolve to the input network.
-    @:param input_network - input network to attach corridor ids to.
-    @:param output_network - output network with attached corridor ids.
-    @:param connected_range - the distance between lines that is considered for a connected relationship.
-    @:param - parallel_threshold - threshold of angles in degrees between parallel lines and non-parallel lines.
-    @:param - temp_near_table - temporary near table used to compute line relationships.  """
+    Parameters
+    -------------------
+    input_network - input network to attach corridor ids to.
+    output_network - output network with attached corridor ids.
+    connected_range - the distance between lines that is considered for a connected relationship.
+    parallel_threshold - threshold of angles in degrees between parallel lines and non-parallel lines.
+    temp_near_table - temporary near table used to compute line relationships.  """
     near_table = os.path.join("in_memory", "Near_Table")
     bearing_field = "Azimuth"
     if near_table is None:

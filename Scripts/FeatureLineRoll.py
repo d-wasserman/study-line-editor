@@ -34,7 +34,7 @@ def get_line_ends(linegeometry, pull_value, percentage=False):
     a the start and end points of the line as separate geometries.
     Parameters
     ---------------------
-    Line Geometry - arc polyline input
+    linegeometry - arc polyline input
     pull_value - the distance or percentage the line will be pulled back from either the start or end point
     percentage - if true, pull value is treated as a percentage."""
     line_length = 1 if percentage else float(linegeometry.length)

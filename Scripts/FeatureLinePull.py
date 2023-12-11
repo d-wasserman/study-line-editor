@@ -31,10 +31,14 @@ import linelibrary as fll
 def pull_line_geometry(linegeometry, pull_value, end_point_bool=True, start_point_bool=True):
     """This function will take an ArcPolyline, a pull value, and a start and end point boolean. The function returns
     a line geometry whose length are pulled back based on the input parameters.
-    Line Geometry- arc polyline/pull_value- the length or desired number of segments, /pull_value- the distance the
-    line will be pulled back from either the start or end point/ end_point_pull- if true, the end point of the line will
-    be pulled back the target distance, start_point_bool- if true, the start point of the line will be pulled back the
-    target distance. """
+    Parameters:
+    - linegeometry (ArcPolyline): The ArcPolyline geometry to be modified. It represents the original line geometry before any modification.
+    - pull_value (float): The distance by which the line's start and/or end points will be retracted. This value determines how much the line geometry is shortened.
+    - end_point_bool (bool, optional): A flag to indicate whether the end point of the line should be retracted. If set to True, the end point of the line is pulled back by the distance specified in pull_value. Defaults to True.
+    - start_point_bool (bool, optional): A flag to indicate whether the start point of the line should be retracted. If set to True, the start point of the line is pulled back by the distance specified in pull_value. Defaults to True.
+
+    Returns:
+    - ArcPolyline: A modified ArcPolyline geometry with its start and/or end points retracted by the specified pull_value."""
     segment_returned = None
     line_length = float(linegeometry.length)
     end_point_start_position = line_length
@@ -58,7 +62,15 @@ def pull_line_geometry(linegeometry, pull_value, end_point_bool=True, start_poin
 
 def feature_line_pull(in_fc, out_pull_value, out_pull_field, start_point_bool, end_point_bool, out_fc):
     """Take a feature class and pull back a line equal to a target distance from either a start or end point position.
-     This version of the tool will join the original fields."""
+     This version of the tool will join the original fields.
+      Parameters:
+        - in_fc (FeatureClass): The input feature class containing the line geometries to be modified. It should consist of line features.
+        - out_pull_value (float): The distance by which the lines' start and/or end points will be retracted. This value determines how much each line geometry in the feature class is shortened.
+        - out_pull_field (str): The name of the field in the output feature class where the pull back value will be stored. This field will contain the value specified in out_pull_value for each feature.
+        - start_point_bool (bool): A flag to indicate whether the start points of the lines should be retracted. If True, the start point of each line in the feature class is pulled back by the distance specified in out_pull_value.
+        - end_point_bool (bool): A flag to indicate whether the end points of the lines should be retracted. If True, the end point of each line in the feature class is pulled back by the distance specified in out_pull_value.
+        - out_fc (FeatureClass): The output feature class where the modified line geometries will be saved. This feature class will include the original attribute fields from in_fc, along with the new out_pull_field.
+    """
     try:
         arcpy.env.overwriteOutput = True
         OutWorkspace = os.path.split(out_fc)[0]

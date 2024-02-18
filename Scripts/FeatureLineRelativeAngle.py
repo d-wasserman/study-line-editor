@@ -41,12 +41,13 @@ def feature_line_relative_angle(target_lines_fc,reference_lines_fc,search_radius
     ---------------------
     target_lines_fc (FeatureClass): The input feature class containing the target line geometries for comparison to reference lines.
     reference_lines_fc (FeatureClass): The input feature class containing the reference line geometries to compare against the target lines.
-        This is the output feature class with new attributes added including target_angle
+        This is the output feature class with new attributes added including the releative angle to the target, and whether it is parallel. 
     search_radius (LinearUnit): The search radius within which the tool will look for reference lines relative to each target line.
     angle_threshold (float): An optional angle threshold (in degrees) to identify lines that are nearly parallel to the target lines. 
-                             Lines within this threshold angle from the target lines will be considered parallel.
-    output_feature_line_fc (FeatureClass): The output feature class where the lines that meet the angle criteria will be stored.
-    This feature class will include the attributes from the reference lines fc, along with the computed smallest relative angle to the reference lines.
+                             Lines within this threshold angle from the target lines are tagged with a 1 in a Parallel_Target field. 
+    output_feature_line_fc (FeatureClass): The output feature class of reference lines with relative angles to the target and those 
+                            deemed parallel to the target. This feature class will include the attributes from the reference_lines_fc, 
+                            along with the computed smallest relative angle to the reference lines.
     """
     try:
         arcpy.env.overwriteOutput = True
@@ -72,12 +73,14 @@ def feature_line_relative_angle(target_lines_fc,reference_lines_fc,search_radius
         corridor_oid = arcpy.Describe(target_lines_fc).OIDFieldName
         reference_df = reference_df.merge(target_df,how='left',right_on = corridor_oid, left_on = "NEAR_FID",suffixes = ("_Ref","_Tar"))
         fll.arc_print("Computing relative angles...")
-        reference_df["AngleDiff"] = (reference_df["RefAzimuth"] - reference_df["TarAzimuth"])%360
-        reference_df["Angle_1"] = reference_df["AngleDiff"].apply(fll.find_smallest_angle,args = (0,True,))
-        reference_df["Angle_2"] = reference_df["AngleDiff"].apply(fll.find_smallest_angle,args = (180,True,))
-        reference_df["Relative_Angle"] = reference_df[["Angle_1","Angle_2"]].min(axis=1)
-        reference_df["Parallel_Target"] = np.where(reference_df["Relative_Angle"]<angle_threshold,1,0)
-        reference_df = reference_df[[OIDFieldName,"Angle_1","Angle_2","Relative_Angle","Parallel_Target"]].copy()
+        angle_diff,reference_azimumth,target_azimuth = "Angle_Diff", bearing_field,corr_bearing_field
+        angle1,angle2,relative_angle,parallel = "Angle_1","Angle_2","Relative_Angle", "Parallel_Target"
+        reference_df[angle_diff] = (reference_df[reference_azimumth] - reference_df[target_azimuth])%360
+        reference_df[angle1] = reference_df[angle_diff].apply(fll.find_smallest_angle,args = (0,True,))
+        reference_df[angle2] = reference_df[angle_diff].apply(fll.find_smallest_angle,args = (180,True,))
+        reference_df[relative_angle] = reference_df[[angle1,angle2]].min(axis=1)
+        reference_df[parallel] = np.where(reference_df[relative_angle]<angle_threshold,1,0)
+        reference_df = reference_df[[OIDFieldName,angle1,angle2,relative_angle,parallel]].copy()
         fll.arc_print("Exporing relative angle results as array.")
         finalStandardArray = reference_df.to_records()
         fll.arc_print("Joining new score fields to feature class.")

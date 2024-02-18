@@ -28,7 +28,7 @@ import linelibrary as fll
 
 # Function Definitions
 
-def feature_line_relative_angle(tartet_lines_fc,reference_lines_fc,search_radius,angle_threshold,output_feature_line_fc):
+def feature_line_relative_angle(target_lines_fc,reference_lines_fc,search_radius,angle_threshold,output_feature_line_fc):
     """
     Analyzes two sets of line geometries to find the smallest relative angle between each line in the target 
     feature class and all lines in the reference feature class. Optionally, it can apply an angle threshold to 
@@ -48,24 +48,37 @@ def feature_line_relative_angle(tartet_lines_fc,reference_lines_fc,search_radius
     """
     try:
         arcpy.env.overwriteOutput = True
-        OutWorkspace = os.path.split(out_fc)[0]
-        FileName = os.path.split(out_fc)[1]
-        desc = arcpy.Describe(out_file)
+        workspace = r"in_memory"
+        desc = arcpy.Describe(output_feature_line_fc)
+        bearing_field = "RefAzimuth"
+        corr_bearing_field = "TarAzimuth"
         arcpy.CopyFeatures_management(reference_lines_fc,output_feature_line_fc)
+        fll.arc_print("Output file copied...",True)
+        arcpy.Near_analysis(output_feature_line_fc,target_lines_fc,search_radius=search_radius)
+        fll.arc_print("Near Analysis complete...",True)
+        arcpy.AddField_management(output_feature_line_fc,bearing_field,"DOUBLE")
+        reference_bearing_dict = fll.calculate_line_bearing(output_feature_line_fc,bearing_field,True)
+        arcpy.AddField_management(target_lines_fc,corr_bearing_field ,"DOUBLE")
+        target_bearing_dict = fll.calculate_line_bearing(target_lines_fc,corr_bearing_field,True)
+        ref_fields = fll.get_fields(output_feature_line_fc)
+        ref_df = fll.arcgis_table_to_df(output_feature_line_fc,ref_fields)
+        target_fields = fll.get_fields(target_lines_fc)
+        target_df = fll.arcgis_table_to_df(target_lines_fc,target_fields)
         OIDFieldName = desc.OIDFieldName
-        network_df[OIDFieldName] = network_df.index
-        network_df[OIDFieldName].head()
-        JoinField = arcpy.ValidateFieldName("DFIndJoin", workspace)
-        
-        network_df["Angle_1"] = network_df["AngleDiff"].apply(fll.find_smallest_angle,args = (0,True,))
-        network_df["Angle_2"] = network_df["AngleDiff"].apply(fll.find_smallest_angle,args = (180,True,))
-        network_df["Relative_Angle"] = network_df[["Angle_1","Angle_2"]].min(axis=1)
-        network_df= network_df[[OIDFieldName,"Angle_1","Angle_2","Relative_Angle"]].copy()
-        print("Exporting new percentile dataframe to structured numpy array.")
-        finalStandardArray = network_df.to_records()
-        print("Joining new score fields to feature class.")
-        arcpy.da.ExtendTable(out_file, OIDFieldName, finalStandardArray, OIDFieldName, append_only=False)
-        print("Join Complete")
+        ref_df[OIDFieldName] = ref_df.index
+        ref_df["AngleDiff"] = (ref_df["NtAzimuth"] - ref_df["CrAzimuth"])%360
+        ref_df["Angle_1"] = ref_df["AngleDiff"].apply(fll.find_smallest_angle,args = (0,True,))
+        ref_df["Angle_2"] = ref_df["AngleDiff"].apply(fll.find_smallest_angle,args = (180,True,))
+        ref_df["Relative_Angle"] = ref_df[["Angle_1","Angle_2"]].min(axis=1)
+        ref_df["Parallel_Target"] = np.where(ref_df["Relative_Angle"]<angle_threshold,1,0)
+        corridor_oid = arcpy.Describe(target_lines_fc).OIDFieldName
+        ref_df = ref_df.merge(target_df,how='left',right_on = corridor_oid, left_on = "NEAR_FID",suffixes = ("_Ref","_Tar"))
+        ref_df = ref_df[[OIDFieldName,"Angle_1","Angle_2","Relative_Angle"]].copy()
+        fll.arc_print("Exporing relative angle results as array.")
+        finalStandardArray = ref_df.to_records()
+        fll.arc_print("Joining new score fields to feature class.")
+        arcpy.da.ExtendTable(output_feature_line_fc, OIDFieldName, finalStandardArray, OIDFieldName, append_only=False)
+        fll.arc_print("Join Complete")
         fll.arc_print("Script Completed Successfully.", True)
     except arcpy.ExecuteError:
         fll.arc_print(arcpy.GetMessages(2))

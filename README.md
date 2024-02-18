@@ -11,6 +11,8 @@ This repository holds a collection of easy to use ArcGIS Geoprocessing scripts (
 
 * Feature Line Roll - Will extend a polyline based on the sampling of the line near its end points. 
 
+* Feature Line Relative Angle - Will find relative angles to tag reference networks as parallel to target corridors. 
+
 # Citations 
 
 If you use the tool in academic research or as part of professional reports, please cite the tool as the following:
@@ -373,4 +375,68 @@ Works in ArcGIS Pro. This tool requires the pandas library to work.
 </tbody>
 </table>
 
+# Feature Line Relative Angle
 
+<b>Summary</b>
+
+This tool analyzes two sets of line geometries to identify the smallest relative angle between each line in the target feature class and all lines in the reference feature class. Optionally, it applies an angle threshold to highlight lines that are nearly parallel to the target lines. The results, including the relative angles and parallel status, are output to a new feature class.
+
+<b>Usage</b>
+
+The primary purpose of this script is to facilitate the analysis of linear geometries by comparing their orientations. This can be particularly useful in:
+
+* Determining the alignment of roads or paths in relation to a given target corridor, aiding in urban planning and design.
+* Identifying parallel infrastructures within a specified radius, which can be crucial for spatial analysis and decision-making processes.
+
+<b>Parameters</b>
+
+<table width="100%" border="0" cellpadding="5">
+<tbody>
+<tr>
+<th width="30%">
+<b>Parameter</b>
+</th>
+<th width="50%">
+<b>Explanation</b>
+</th>
+<th width="20%">
+<b>Data Type</b>
+</th>
+</tr>
+<tr>
+<td class="info">Target_Lines_FC</td>
+<td class="info" align="left">
+<span style="font-weight: bold">Dialog Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><P><SPAN>The input feature class containing the target line geometries for comparison.</SPAN></P></DIV></DIV><br />
+<span style="font-weight: bold">Python Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><P><SPAN>Specifies the target lines for angle comparison.</SPAN></P></DIV></DIV></td>
+<td class="info" align="left">Feature Layer</td>
+</tr>
+<tr>
+<td class="info">Reference_Lines_FC</td>
+<td class="info" align="left">
+<span style="font-weight: bold">Dialog Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><P><SPAN>The input feature class containing reference line geometries for comparison against target lines.</SPAN></P></DIV></DIV><br />
+<span style="font-weight: bold">Python Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><P><SPAN>Defines the reference lines for determining relative angles.</SPAN></P></DIV></DIV></td>
+<td class="info" align="left">Feature Layer</td>
+</tr>
+<tr>
+<td class="info">Search_Radius</td>
+<td class="info" align="left">
+<span style="font-weight: bold">Dialog Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><P><SPAN>The radius within which to search for reference lines relative to each target line.</SPAN></P></DIV></DIV><br />
+<span style="font-weight: bold">Python Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><P><SPAN>Limit of search area for finding relevant reference lines.</SPAN></P></DIV></DIV></td>
+<td class="info" align="left">Linear Unit</td>
+</tr>
+<tr>
+<td class="info">Angle_Threshold</td>
+<td class="info" align="left">
+<span style="font-weight: bold">Dialog Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><P><SPAN>An optional threshold for identifying lines nearly parallel to target lines.</SPAN></P></DIV></DIV><br />
+<span style="font-weight: bold">Python Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><P><SPAN>Determines the criteria for parallelism between target and reference lines.</SPAN></P></DIV></DIV></td>
+<td class="info" align="left">Float</td>
+</tr>
+<tr>
+<td class="info">Output_Feature_Line_FC</td>
+<td class="info" align="left">
+<span style="font-weight: bold">Dialog Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><P><SPAN>The feature class to output reference lines with relative angles and parallel status to target lines.</SPAN></P></DIV></DIV><br />
+<span style="font-weight: bold">Python Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><P><SPAN>Hosts the results of the analysis, including angles and parallelism indicators.</SPAN></P></DIV></DIV></td>
+<td class="info" align="left">Feature Class</td>
+</tr>
+</tbody>
+</table>

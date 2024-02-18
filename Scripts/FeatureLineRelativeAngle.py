@@ -23,6 +23,8 @@
 # --------------------------------
 # Import Modules
 import os, arcpy, math
+import numpy as np
+import pandas as pd
 import linelibrary as fll
 
 
@@ -49,10 +51,11 @@ def feature_line_relative_angle(target_lines_fc,reference_lines_fc,search_radius
     try:
         arcpy.env.overwriteOutput = True
         workspace = r"in_memory"
-        desc = arcpy.Describe(output_feature_line_fc)
         bearing_field = "RefAzimuth"
         corr_bearing_field = "TarAzimuth"
-        arcpy.CopyFeatures_management(reference_lines_fc,output_feature_line_fc)
+        fll.arc_print("Copying feature classes..")
+        arcpy.management.CopyFeatures(reference_lines_fc,output_feature_line_fc,)
+        desc = arcpy.Describe(output_feature_line_fc)
         fll.arc_print("Output file copied...",True)
         arcpy.Near_analysis(output_feature_line_fc,target_lines_fc,search_radius=search_radius)
         fll.arc_print("Near Analysis complete...",True)
@@ -60,28 +63,29 @@ def feature_line_relative_angle(target_lines_fc,reference_lines_fc,search_radius
         reference_bearing_dict = fll.calculate_line_bearing(output_feature_line_fc,bearing_field,True)
         arcpy.AddField_management(target_lines_fc,corr_bearing_field ,"DOUBLE")
         target_bearing_dict = fll.calculate_line_bearing(target_lines_fc,corr_bearing_field,True)
-        ref_fields = fll.get_fields(output_feature_line_fc)
-        ref_df = fll.arcgis_table_to_df(output_feature_line_fc,ref_fields)
+        reference_fields = fll.get_fields(output_feature_line_fc)
+        reference_df = fll.arcgis_table_to_df(output_feature_line_fc,reference_fields)
         target_fields = fll.get_fields(target_lines_fc)
         target_df = fll.arcgis_table_to_df(target_lines_fc,target_fields)
         OIDFieldName = desc.OIDFieldName
-        ref_df[OIDFieldName] = ref_df.index
-        ref_df["AngleDiff"] = (ref_df["NtAzimuth"] - ref_df["CrAzimuth"])%360
-        ref_df["Angle_1"] = ref_df["AngleDiff"].apply(fll.find_smallest_angle,args = (0,True,))
-        ref_df["Angle_2"] = ref_df["AngleDiff"].apply(fll.find_smallest_angle,args = (180,True,))
-        ref_df["Relative_Angle"] = ref_df[["Angle_1","Angle_2"]].min(axis=1)
-        ref_df["Parallel_Target"] = np.where(ref_df["Relative_Angle"]<angle_threshold,1,0)
+        reference_df[OIDFieldName] = reference_df.index
         corridor_oid = arcpy.Describe(target_lines_fc).OIDFieldName
-        ref_df = ref_df.merge(target_df,how='left',right_on = corridor_oid, left_on = "NEAR_FID",suffixes = ("_Ref","_Tar"))
-        ref_df = ref_df[[OIDFieldName,"Angle_1","Angle_2","Relative_Angle"]].copy()
+        reference_df = reference_df.merge(target_df,how='left',right_on = corridor_oid, left_on = "NEAR_FID",suffixes = ("_Ref","_Tar"))
+        fll.arc_print("Computing relative angles...")
+        reference_df["AngleDiff"] = (reference_df["RefAzimuth"] - reference_df["TarAzimuth"])%360
+        reference_df["Angle_1"] = reference_df["AngleDiff"].apply(fll.find_smallest_angle,args = (0,True,))
+        reference_df["Angle_2"] = reference_df["AngleDiff"].apply(fll.find_smallest_angle,args = (180,True,))
+        reference_df["Relative_Angle"] = reference_df[["Angle_1","Angle_2"]].min(axis=1)
+        reference_df["Parallel_Target"] = np.where(reference_df["Relative_Angle"]<angle_threshold,1,0)
+        reference_df = reference_df[[OIDFieldName,"Angle_1","Angle_2","Relative_Angle","Parallel_Target"]].copy()
         fll.arc_print("Exporing relative angle results as array.")
-        finalStandardArray = ref_df.to_records()
+        finalStandardArray = reference_df.to_records()
         fll.arc_print("Joining new score fields to feature class.")
         arcpy.da.ExtendTable(output_feature_line_fc, OIDFieldName, finalStandardArray, OIDFieldName, append_only=False)
         fll.arc_print("Join Complete")
         fll.arc_print("Script Completed Successfully.", True)
     except arcpy.ExecuteError:
-        fll.arc_print(arcpy.GetMessages(2))
+        arcpy.AddError(str(arcpy.GetMessages(2)))
     except Exception as e:
         fll.arc_print(e.args[0])
 

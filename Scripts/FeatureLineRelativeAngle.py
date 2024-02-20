@@ -3,7 +3,7 @@
 # This tool has an optional threshold that can be set to identify all facilities that are parallel (within the threshold) to the target corridors.
 # of the old feature class.
 # Author: David Wasserman
-# Last Modified: 2/16/2024
+# Last Modified: 2/19/2024
 # Copyright: David Wasserman
 # Python Version:  3.9
 # --------------------------------
@@ -30,7 +30,7 @@ import linelibrary as fll
 
 # Function Definitions
 
-def feature_line_relative_angle(target_lines_fc,reference_lines_fc,search_radius,angle_threshold,output_feature_line_fc):
+def feature_line_relative_angle(target_lines_fc,reference_lines_fc,search_radius,angle_threshold,use_nearest_point=True,output_feature_line_fc="in_memory/parallel_facility"):
     """
     Analyzes two sets of line geometries to find the smallest relative angle between each line in the target 
     feature class and all lines in the reference feature class. Optionally, it can apply an angle threshold to 
@@ -45,6 +45,10 @@ def feature_line_relative_angle(target_lines_fc,reference_lines_fc,search_radius
     search_radius (LinearUnit): The search radius within which the tool will look for reference lines relative to each target line.
     angle_threshold (float): An optional angle threshold (in degrees) to identify lines that are nearly parallel to the target lines. 
                              Lines within this threshold angle from the target lines are tagged with a 1 in a Parallel_Target field. 
+    use_nearest_point (bool): The reference lines use the Near (Analysis) tools to identify the closest lines to the target.
+                            By default, this uses the spatial relationship of the reference lines centroids to the target line. This is effectively 
+                            looking at the nearest spatial relationship relative to the centroid of the reference corridor. 
+
     output_feature_line_fc (FeatureClass): The output feature class of reference lines with relative angles to the target and those 
                             deemed parallel to the target. This feature class will include the attributes from the reference_lines_fc, 
                             along with the computed smallest relative angle to the reference lines.
@@ -54,21 +58,33 @@ def feature_line_relative_angle(target_lines_fc,reference_lines_fc,search_radius
         workspace = r"in_memory"
         bearing_field = "RefAzimuth"
         corr_bearing_field = "TarAzimuth"
+        ftp_oid = "ORIG_FID"
+        temp_points = os.path.join(workspace,"Relative_Angle_Points")
         fll.arc_print("Copying feature classes..")
-        arcpy.management.CopyFeatures(reference_lines_fc,output_feature_line_fc,)
-        desc = arcpy.Describe(output_feature_line_fc)
+        arcpy.management.CopyFeatures(reference_lines_fc,output_feature_line_fc)
         fll.arc_print("Output file copied...",True)
-        arcpy.Near_analysis(output_feature_line_fc,target_lines_fc,search_radius=search_radius)
-        fll.arc_print("Near Analysis complete...",True)
+        desc = arcpy.Describe(output_feature_line_fc)
         arcpy.AddField_management(output_feature_line_fc,bearing_field,"DOUBLE")
         reference_bearing_dict = fll.calculate_line_bearing(output_feature_line_fc,bearing_field,True)
         arcpy.AddField_management(target_lines_fc,corr_bearing_field ,"DOUBLE")
         target_bearing_dict = fll.calculate_line_bearing(target_lines_fc,corr_bearing_field,True)
-        reference_fields = fll.get_fields(output_feature_line_fc)
-        reference_df = fll.arcgis_table_to_df(output_feature_line_fc,reference_fields)
+        if use_nearest_point:
+            proximity_features = temp_points
+            if fll.field_exist(output_feature_line_fc,ftp_oid):
+                fll.arc_print("Deleting ORIG_FID field in reference line copy...")
+                arcpy.DeleteField_management(output_feature_line_fc,[ftp_oid])
+            fll.arc_print("Converting output lines to points for Near Analysis...")
+            arcpy.FeatureToPoint_management(output_feature_line_fc,temp_points,"INSIDE")
+        else:
+            fll.arc_print("Considering nearest relationships based on original lines...")
+            proximity_features = output_feature_line_fc
+        arcpy.Near_analysis(proximity_features,target_lines_fc,search_radius=search_radius)
+        fll.arc_print("Near Analysis complete...",True)
+        reference_fields = fll.get_fields(proximity_features)
+        reference_df = fll.arcgis_table_to_df(proximity_features,reference_fields)
         target_fields = fll.get_fields(target_lines_fc)
         target_df = fll.arcgis_table_to_df(target_lines_fc,target_fields)
-        OIDFieldName = desc.OIDFieldName
+        OIDFieldName = desc.OIDFieldName if not use_nearest_point else ftp_oid
         reference_df[OIDFieldName] = reference_df.index
         corridor_oid = arcpy.Describe(target_lines_fc).OIDFieldName
         reference_df = reference_df.merge(target_df,how='left',right_on = corridor_oid, left_on = "NEAR_FID",suffixes = ("_Ref","_Tar"))
@@ -84,13 +100,14 @@ def feature_line_relative_angle(target_lines_fc,reference_lines_fc,search_radius
         fll.arc_print("Exporing relative angle results as array.")
         finalStandardArray = reference_df.to_records()
         fll.arc_print("Joining new score fields to feature class.")
-        arcpy.da.ExtendTable(output_feature_line_fc, OIDFieldName, finalStandardArray, OIDFieldName, append_only=False)
+        OutOIDFieldName = desc.OIDFieldName
+        arcpy.da.ExtendTable(output_feature_line_fc, OutOIDFieldName, finalStandardArray, OIDFieldName, append_only=False)
         fll.arc_print("Join Complete")
         fll.arc_print("Script Completed Successfully.", True)
     except arcpy.ExecuteError:
         arcpy.AddError(str(arcpy.GetMessages(2)))
     except Exception as e:
-        fll.arc_print(e.args[0])
+        arcpy.AddError(str(e.args[0]))
 
         # End do_analysis function
 
@@ -105,6 +122,7 @@ if __name__ == '__main__':
     Reference_Lines = arcpy.GetParameterAsText(1)
     Search_Radius = arcpy.GetParameter(2)
     Angle_Threshold = float(arcpy.GetParameter(3))
-    Output_Feature_Line = arcpy.GetParameterAsText(4)
-    feature_line_relative_angle(Target_Lines, Reference_Lines, Search_Radius, Angle_Threshold, Output_Feature_Line)
+    Use_Nearest_Point = bool(arcpy.GetParameter(4))
+    Output_Feature_Line = arcpy.GetParameterAsText(5)
+    feature_line_relative_angle(Target_Lines, Reference_Lines, Search_Radius, Angle_Threshold, Use_Nearest_Point, Output_Feature_Line)
 

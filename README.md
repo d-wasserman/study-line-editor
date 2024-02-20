@@ -432,6 +432,15 @@ The primary purpose of this script is to facilitate the analysis of linear geome
 <td class="info" align="left">Float</td>
 </tr>
 <tr>
+<td class="info">Use_Nearest_Point</td>
+<td class="info" align="left">
+<span style="font-weight: bold">Dialog Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><P><SPAN>The reference lines use the Near (Analysis) tools to identify the closest lines to the target.
+                            By default, this uses the spatial relationship of the reference lines centroids to the target line. This is effectively 
+                            looking at the nearest spatial relationship relative to the centroid of the reference corridor. </SPAN></P></DIV></DIV><br />
+<span style="font-weight: bold">Python Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><P><SPAN>Conversion to centroid has overhead in the form of OID tracking.</SPAN></P></DIV></DIV></td>
+<td class="info" align="left">Float</td>
+</tr>
+<tr>
 <td class="info">Output_Feature_Line_FC</td>
 <td class="info" align="left">
 <span style="font-weight: bold">Dialog Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><P><SPAN>The feature class to output reference lines with relative angles and parallel status to target lines.</SPAN></P></DIV></DIV><br />

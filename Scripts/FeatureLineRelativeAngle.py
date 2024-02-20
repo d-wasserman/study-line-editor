@@ -99,7 +99,7 @@ def feature_line_relative_angle(target_lines_fc,reference_lines_fc,search_radius
         joined_fields = [OIDFieldName,angle1,angle2,relative_angle,parallel]
         if use_nearest_point:
             joined_fields.append(near_dist)
-        reference_df = reference_df[].copy()
+        reference_df = reference_df[joined_fields].copy()
         fll.arc_print("Exporing relative angle results as array.")
         finalStandardArray = reference_df.to_records()
         fll.arc_print("Joining new score fields to feature class.")

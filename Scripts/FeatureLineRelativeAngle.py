@@ -58,7 +58,7 @@ def feature_line_relative_angle(target_lines_fc,reference_lines_fc,search_radius
         workspace = r"in_memory"
         bearing_field = "RefAzimuth"
         corr_bearing_field = "TarAzimuth"
-        ftp_oid = "ORIG_FID"
+        near_fid, near_dist ,ftp_oid = "NEAR_FID","NEAR_DIST", "ORIG_FID"
         temp_points = os.path.join(workspace,"Relative_Angle_Points")
         fll.arc_print("Copying feature classes..")
         arcpy.management.CopyFeatures(reference_lines_fc,output_feature_line_fc)
@@ -87,7 +87,7 @@ def feature_line_relative_angle(target_lines_fc,reference_lines_fc,search_radius
         OIDFieldName = desc.OIDFieldName if not use_nearest_point else ftp_oid
         reference_df[OIDFieldName] = reference_df.index
         corridor_oid = arcpy.Describe(target_lines_fc).OIDFieldName
-        reference_df = reference_df.merge(target_df,how='left',right_on = corridor_oid, left_on = "NEAR_FID",suffixes = ("_Ref","_Tar"))
+        reference_df = reference_df.merge(target_df,how='left',right_on = corridor_oid, left_on = near_fid ,suffixes = ("_Ref","_Tar"))
         fll.arc_print("Computing relative angles...")
         angle_diff,reference_azimumth,target_azimuth = "Angle_Diff", bearing_field,corr_bearing_field
         angle1,angle2,relative_angle,parallel = "Angle_1","Angle_2","Relative_Angle", "Parallel_Target"
@@ -96,7 +96,10 @@ def feature_line_relative_angle(target_lines_fc,reference_lines_fc,search_radius
         reference_df[angle2] = reference_df[angle_diff].apply(fll.find_smallest_angle,args = (180,True,))
         reference_df[relative_angle] = reference_df[[angle1,angle2]].min(axis=1)
         reference_df[parallel] = np.where(reference_df[relative_angle]<angle_threshold,1,0)
-        reference_df = reference_df[[OIDFieldName,angle1,angle2,relative_angle,parallel]].copy()
+        joined_fields = [OIDFieldName,angle1,angle2,relative_angle,parallel]
+        if use_nearest_point:
+            joined_fields.append(near_dist)
+        reference_df = reference_df[].copy()
         fll.arc_print("Exporing relative angle results as array.")
         finalStandardArray = reference_df.to_records()
         fll.arc_print("Joining new score fields to feature class.")

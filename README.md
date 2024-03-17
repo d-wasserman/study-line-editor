@@ -13,6 +13,8 @@ This repository holds a collection of easy to use ArcGIS Geoprocessing scripts (
 
 * Feature Line Relative Angle - Will find relative angles to tag reference networks as parallel to target corridors. 
 
+* Feature Line Gap Closure - Will find end points of lines with gaps between them and create new lines to close them.
+
 # Citations 
 
 If you use the tool in academic research or as part of professional reports, please cite the tool as the following:
@@ -446,6 +448,66 @@ The primary purpose of this script is to facilitate the analysis of linear geome
 <span style="font-weight: bold">Dialog Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><P><SPAN>The feature class to output reference lines with relative angles and parallel status to target lines.</SPAN></P></DIV></DIV><br />
 <span style="font-weight: bold">Python Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><P><SPAN>Hosts the results of the analysis, including angles and parallelism indicators.</SPAN></P></DIV></DIV></td>
 <td class="info" align="left">Feature Class</td>
+</tr>
+</tbody>
+</table>
+
+
+# Feature Line Gap Closure
+
+<b>Summary</b>
+
+This script is designed to enhance network connectivity by identifying and filling gaps between line feature end points within a specified search radius. By analyzing spatial relationships, it creates new lines in an output feature class, thereby improving integration within the network. This process ensures that spatial data representations are more accurate and connected, facilitating better analysis and decision-making in various applications such as urban planning, transportation networks, and utility management.
+
+<b>Usage</b>
+
+The primary function of this tool is to detect and close gaps between line features, which might otherwise disrupt network connectivity. It achieves this by:
+
+* Identifying line feature end points that are within a specified search radius but not directly connected or part of the same line.
+* Generating new line features that bridge these gaps, based on the proximity of the end points.
+* Adding the FIDs (Feature IDs) of the connected line end points as start and end attributes in the output feature class.
+* Including a field for the near distance, which quantifies the gap between the end points.
+
+This tool is invaluable for creating a feature class of lines that effectively closes gaps, enhancing the integrity and usability of spatial datasets.
+
+<b>Parameters</b>
+
+<table width="100%" border="0" cellpadding="5">
+<tbody>
+<tr>
+<th width="30%">
+<b>Parameter</b>
+</th>
+<th width="50%">
+<b>Explanation</b>
+</th>
+<th width="20%">
+<b>Data Type</b>
+</th>
+</tr>
+<tr>
+<td class="info">Input_Feature_Class</td>
+<td class="info" align="left">
+<span style="font-weight: bold">Dialog Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><P>The input line features to analyze for identifying potential gap closures. This parameter is crucial for determining where new connecting lines can be introduced.</P></DIV></DIV></td>
+<td class="info" align="left">Feature Class</td>
+</tr>
+<tr>
+<td class="info">Output_Feature_Class</td>
+<td class="info" align="left">
+<span style="font-weight: bold">Dialog Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><P>The output feature class where new lines, designed to fill identified gaps, will be stored. This feature class becomes a comprehensive dataset representing both original and newly created line features.</P></DIV></DIV></td>
+<td class="info" align="left">Feature Class</td>
+</tr>
+<tr>
+<td class="info">Search_Radius</td>
+<td class="info" align="left">
+<span style="font-weight: bold">Dialog Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><P>The search radius within which to identify the closest end points for gap filling. This parameter defines the scope of the tool's analysis for potential connections.</P></DIV></DIV></td>
+<td class="info" align="left">Linear Unit</td>
+</tr>
+<tr>
+<td class="info">Connection_Count</td>
+<td class="info" align="left">
+<span style="font-weight: bold">Dialog Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><P>The number of connections to create between end points in order of proximity. This parameter helps prioritize which gaps to close first, based on spatial relationships.</P></DIV></DIV></td>
+<td class="info" align="left">Long</td>
 </tr>
 </tbody>
 </table>

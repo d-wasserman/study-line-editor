@@ -55,7 +55,7 @@ def create_gap_filling_lines(input_line_features, output_feature_class, search_r
     ll.arc_print("Construct the near table to find closest points within the search radius...")
     near_table_temp = os.path.join(workspace,"end_points_near")
     arcpy.GenerateNearTable_analysis(end_points_temp, end_points_temp, near_table_temp, 
-                                        search_radius, "NO_LOCATION", "NO_ANGLE", "CLOSEST")
+                                        search_radius, "NO_LOCATION", "NO_ANGLE","ALL")
     ll.arc_print("Filter out points that are from the same line feature...")
     # Load data into a DataFrame
     df = ll.arcgis_table_to_df(end_points_temp, input_fields=["SHAPE@", pt_id,ln_id])
@@ -65,7 +65,7 @@ def create_gap_filling_lines(input_line_features, output_feature_class, search_r
     groups = sm_df.groupby(pt_id)
     line_dict=  {pt_id: group[ln_id].values[0] for pt_id, group in groups}
     
-    ll.arc_print(line_dict)
+    # ll.arc_print(line_dict)
     filtered_near_table = [row for row in arcpy.da.SearchCursor(near_table_temp, ["IN_FID", "NEAR_FID", "NEAR_DIST"]) 
                             if line_dict[row[0]] != line_dict[row[1]]]
     
@@ -75,14 +75,19 @@ def create_gap_filling_lines(input_line_features, output_feature_class, search_r
     arcpy.AddField_management(output_feature_class, a_nd,"LONG")
     arcpy.AddField_management(output_feature_class,b_nd,"LONG")
     ll.arc_print("Insert new lines into the output feature class...")
+    sr = arcpy.Describe(input_line_features).spatialReference
+    count_hash = {}
     with arcpy.da.InsertCursor(output_feature_class, ["SHAPE@",a_nd,b_nd]) as insert_cursor:
         for row in filtered_near_table:
+            counter = count_hash.setdefault(row[0],0)
+            if counter >= connection_count:
+                # Don't create new lines for those beyond
+                continue
             start_point = df[df[pt_id]==row[0]]["SHAPE@"].values[0]
             end_point = df[df[pt_id]==row[1]]["SHAPE@"].values[0]
-            line = arcpy.Polyline(arcpy.Array([start_point, end_point]), 
-                                input_line_features.spatialReference)
+            line = arcpy.Polyline(arcpy.Array([start_point.firstPoint, end_point.lastPoint]), sr)
             insert_cursor.insertRow([line,row[0], row[1]])
-            
+            count_hash[row[0]] += 1
             
         ll.arc_print("Gap filling lines created successfully.")
         

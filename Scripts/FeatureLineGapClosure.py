@@ -56,7 +56,7 @@ def create_gap_filling_lines(input_line_features, output_feature_class, search_r
     near_table_temp = os.path.join(workspace,"end_points_near")
     arcpy.GenerateNearTable_analysis(end_points_temp, end_points_temp, near_table_temp, 
                                         search_radius, "NO_LOCATION", "NO_ANGLE","ALL",closest_count = connection_count)
-    ll.arc_print("Filter out points that are from the same line feature...")
+    ll.arc_print("Filter out points that are from the same line feature or are touching an existing point...")
     # Load data into a DataFrame
     df = ll.arcgis_table_to_df(end_points_temp, input_fields=["SHAPE@", pt_id,ln_id])
     df.set_index(pt_id)
@@ -67,7 +67,7 @@ def create_gap_filling_lines(input_line_features, output_feature_class, search_r
     
     # ll.arc_print(line_dict)
     filtered_near_table = [row for row in arcpy.da.SearchCursor(near_table_temp, ["IN_FID", "NEAR_FID", "NEAR_DIST"]) 
-                            if line_dict[row[0]] != line_dict[row[1]]]
+                            if (line_dict[row[0]] != line_dict[row[1]]) or row[2]<=0] # Filter out those of the same line or touching now
     
     ll.arc_print("Create the output feature class...")
     arcpy.CreateFeatureclass_management(workspace, output_fc_name, "POLYLINE", spatial_reference=input_line_features)

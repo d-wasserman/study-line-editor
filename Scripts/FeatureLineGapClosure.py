@@ -55,7 +55,7 @@ def create_gap_filling_lines(input_line_features, output_feature_class, search_r
     ll.arc_print("Construct the near table to find closest points within the search radius...")
     near_table_temp = os.path.join(workspace,"end_points_near")
     arcpy.GenerateNearTable_analysis(end_points_temp, end_points_temp, near_table_temp, 
-                                        search_radius, "NO_LOCATION", "NO_ANGLE","ALL")
+                                        search_radius, "NO_LOCATION", "NO_ANGLE","ALL",closest_count = connection_count)
     ll.arc_print("Filter out points that are from the same line feature...")
     # Load data into a DataFrame
     df = ll.arcgis_table_to_df(end_points_temp, input_fields=["SHAPE@", pt_id,ln_id])

@@ -492,6 +492,13 @@ This tool is invaluable for creating a feature class of lines that effectively c
 <td class="info" align="left">Feature Class</td>
 </tr>
 <tr>
+<tr>
+<td class="info">Transfer_Fields</td>
+<td class="info" align="left">
+<span style="font-weight: bold">Dialog Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><P>The fields to transfer as A-B fields to the output feature class from the linear input.</P></DIV></DIV></td>
+<td class="info" align="left">Feature Class</td>
+</tr>
+<tr>
 <td class="info">Output_Feature_Class</td>
 <td class="info" align="left">
 <span style="font-weight: bold">Dialog Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><P>The output feature class where new lines, designed to fill identified gaps, will be stored. This feature class becomes a comprehensive dataset representing both original and newly created line features.</P></DIV></DIV></td>

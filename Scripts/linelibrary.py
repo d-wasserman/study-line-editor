@@ -27,19 +27,22 @@ import arcpy
 import os
 import itertools
 import math
+
 try:
     import pandas as pd
 except:
-    arcpy.AddWarning("Some tools require the Pandas installed in the ArcGIS Python Install."
-                   " Might require installing pre-requisite libraries and software.")
-
+    arcpy.AddWarning(
+        "Some tools require the Pandas installed in the ArcGIS Python Install."
+        " Might require installing pre-requisite libraries and software."
+    )
 
 
 # Function Definitions
 def func_report(function=None, reportBool=False):
     """This decorator function is designed to be used as a wrapper with other functions to enable basic try and except
-     reporting (if function fails it will report the name of the function that failed and its arguments. If a report
-      boolean is true the function will report inputs and outputs of a function.-David Wasserman"""
+    reporting (if function fails it will report the name of the function that failed and its arguments. If a report
+     boolean is true the function will report inputs and outputs of a function.-David Wasserman
+    """
 
     def func_report_decorator(function):
         def func_wrapper(*args, **kwargs):
@@ -52,12 +55,16 @@ def func_report(function=None, reportBool=False):
                 return func_result
             except Exception as e:
                 print(
-                    "{0} - function failed -|- Function arguments were:{1}.".format(str(function.__name__), str(args)))
+                    "{0} - function failed -|- Function arguments were:{1}.".format(
+                        str(function.__name__), str(args)
+                    )
+                )
                 print(e.args[0])
 
         return func_wrapper
 
     if not function:  # User passed in a bool argument
+
         def waiting_for_function(function):
             return func_report_decorator(function)
 
@@ -68,8 +75,9 @@ def func_report(function=None, reportBool=False):
 
 def arc_tool_report(function=None, arcToolMessageBool=False, arcProgressorBool=False):
     """This decorator function is designed to be used as a wrapper with other GIS functions to enable basic try and except
-     reporting (if function fails it will report the name of the function that failed and its arguments. If a report
-      boolean is true the function will report inputs and outputs of a function.-David Wasserman"""
+    reporting (if function fails it will report the name of the function that failed and its arguments. If a report
+     boolean is true the function will report inputs and outputs of a function.-David Wasserman
+    """
 
     def arc_tool_report_decorator(function):
         def func_wrapper(*args, **kwargs):
@@ -80,21 +88,31 @@ def arc_tool_report(function=None, arcToolMessageBool=False, arcProgressorBool=F
                     arcpy.AddMessage("     Input(s):{0}".format(str(args)))
                     arcpy.AddMessage("     Output(s):{0}".format(str(func_result)))
                 if arcProgressorBool:
-                    arcpy.SetProgressorLabel("Function:{0}".format(str(function.__name__)))
+                    arcpy.SetProgressorLabel(
+                        "Function:{0}".format(str(function.__name__))
+                    )
                     arcpy.SetProgressorLabel("     Input(s):{0}".format(str(args)))
-                    arcpy.SetProgressorLabel("     Output(s):{0}".format(str(func_result)))
+                    arcpy.SetProgressorLabel(
+                        "     Output(s):{0}".format(str(func_result))
+                    )
                 return func_result
             except Exception as e:
                 arcpy.AddWarning(
-                    "{0} - function failed -|- Function arguments were:{1}.".format(str(function.__name__),
-                                                                                    str(args)))
+                    "{0} - function failed -|- Function arguments were:{1}.".format(
+                        str(function.__name__), str(args)
+                    )
+                )
                 print(
-                    "{0} - function failed -|- Function arguments were:{1}.".format(str(function.__name__), str(args)))
+                    "{0} - function failed -|- Function arguments were:{1}.".format(
+                        str(function.__name__), str(args)
+                    )
+                )
                 print(e.args[0])
 
         return func_wrapper
 
     if not function:  # User passed in a bool argument
+
         def waiting_for_function(function):
             return arc_tool_report_decorator(function)
 
@@ -105,7 +123,7 @@ def arc_tool_report(function=None, arcToolMessageBool=False, arcProgressorBool=F
 
 @arc_tool_report
 def arc_print(string, progressor_Bool=False):
-    """ This function is used to simplify using arcpy reporting for tool creation,if progressor bool is true it will
+    """This function is used to simplify using arcpy reporting for tool creation,if progressor bool is true it will
     create a tool label."""
     casted_string = str(string)
     if progressor_Bool:
@@ -120,30 +138,52 @@ def arc_print(string, progressor_Bool=False):
 @arc_tool_report
 def field_exist(featureclass, fieldname):
     """ArcFunction
-     Check if a field in a feature class field exists and return true it does, false if not.- David Wasserman"""
+    Check if a field in a feature class field exists and return true it does, false if not.- David Wasserman
+    """
     fieldList = arcpy.ListFields(featureclass, fieldname)
     fieldCount = len(fieldList)
-    if (fieldCount >= 1) and fieldname.strip():  # If there is one or more of this field return true
+    if (
+        fieldCount >= 1
+    ) and fieldname.strip():  # If there is one or more of this field return true
         return True
     else:
         return False
 
 
 @arc_tool_report
-def add_new_field(in_table, field_name, field_type, field_precision="#", field_scale="#", field_length="#",
-                  field_alias="#", field_is_nullable="#", field_is_required="#", field_domain="#"):
+def add_new_field(
+    in_table,
+    field_name,
+    field_type,
+    field_precision="#",
+    field_scale="#",
+    field_length="#",
+    field_alias="#",
+    field_is_nullable="#",
+    field_is_required="#",
+    field_domain="#",
+):
     """ArcFunction
-    Add a new field if it currently does not exist. Add field alone is slower than checking first.- David Wasserman"""
+    Add a new field if it currently does not exist. Add field alone is slower than checking first.- David Wasserman
+    """
     if field_exist(in_table, field_name):
         print(field_name + " Exists")
         arcpy.AddMessage(field_name + " Exists")
     else:
         print("Adding " + field_name)
         arcpy.AddMessage("Adding " + field_name)
-        arcpy.AddField_management(in_table, field_name, field_type, field_precision, field_scale,
-                                  field_length,
-                                  field_alias,
-                                  field_is_nullable, field_is_required, field_domain)
+        arcpy.AddField_management(
+            in_table,
+            field_name,
+            field_type,
+            field_precision,
+            field_scale,
+            field_length,
+            field_alias,
+            field_is_nullable,
+            field_is_required,
+            field_domain,
+        )
 
 
 @arc_tool_report
@@ -160,7 +200,9 @@ def validate_df_names(dataframe, output_feature_class_workspace):
 
 
 @arc_tool_report
-def arcgis_table_to_dataframe(in_fc, input_fields, query="", skip_nulls=False, null_values=None):
+def arcgis_table_to_dataframe(
+    in_fc, input_fields, query="", skip_nulls=False, null_values=None
+):
     """Function will convert an arcgis table into a pandas dataframe with an object ID index, and the selected
     input fields. Uses TableToNumPyArray to get initial data."""
     OIDFieldName = arcpy.Describe(in_fc).OIDFieldName
@@ -168,7 +210,9 @@ def arcgis_table_to_dataframe(in_fc, input_fields, query="", skip_nulls=False, n
         final_fields = [OIDFieldName] + input_fields
     else:
         final_fields = [field.name for field in arcpy.ListFields(in_fc)]
-    np_array = arcpy.da.TableToNumPyArray(in_fc, final_fields, query, skip_nulls, null_values)
+    np_array = arcpy.da.TableToNumPyArray(
+        in_fc, final_fields, query, skip_nulls, null_values
+    )
     object_id_index = np_array[OIDFieldName]
     fc_dataframe = pd.DataFrame(np_array, index=object_id_index, columns=input_fields)
     return fc_dataframe
@@ -187,7 +231,9 @@ def arcgis_table_to_df(in_fc, input_fields=None, query=""):
         final_fields = [OIDFieldName] + input_fields
     else:
         final_fields = [field.name for field in arcpy.ListFields(in_fc)]
-    data = [row for row in arcpy.da.SearchCursor(in_fc, final_fields, where_clause=query)]
+    data = [
+        row for row in arcpy.da.SearchCursor(in_fc, final_fields, where_clause=query)
+    ]
     fc_dataframe = pd.DataFrame(data, columns=final_fields)
     fc_dataframe = fc_dataframe.set_index(OIDFieldName, drop=True)
     return fc_dataframe
@@ -196,7 +242,7 @@ def arcgis_table_to_df(in_fc, input_fields=None, query=""):
 @arc_tool_report
 def arc_unique_values(table, field, filter_falsy=False):
     """This function will return a list of unique values from a passed field. If the optional bool is true,
-    this function will scrub out null/falsy values. """
+    this function will scrub out null/falsy values."""
     with arcpy.da.SearchCursor(table, [field]) as cursor:
         if filter_falsy:
             return sorted({row[0] for row in cursor if row[0]})
@@ -210,7 +256,8 @@ def copy_altered_row(row, field_list, field_dict, replacement_dict):
     :param - row - row of an input cursor
     :param - field_list - list of field names
     :param - field_dict - dictionary of fields and their indexes as values
-    :param - replacement_dict - the dictionary with values to replace the row values with"""
+    :param - replacement_dict - the dictionary with values to replace the row values with
+    """
     try:
         new_row = []
         keyList = replacement_dict.keys()
@@ -221,15 +268,28 @@ def copy_altered_row(row, field_list, field_dict, replacement_dict):
                 else:
                     new_row.append(row[field_dict[field]])
             except:
-                arc_print("Could not replace field {0} with its accepted value. Check field names for match.".format(
-                    str(field)), True)
-                new_row.append(None)  # Append a null value where it cannot find a value to the list.
+                arc_print(
+                    "Could not replace field {0} with its accepted value. Check field names for match.".format(
+                        str(field)
+                    ),
+                    True,
+                )
+                new_row.append(
+                    None
+                )  # Append a null value where it cannot find a value to the list.
         return new_row
     except:
-        arc_print("Could not get row fields for the following input {0}, returned an empty list.".format(str(row)),
-                  True)
+        arc_print(
+            "Could not get row fields for the following input {0}, returned an empty list.".format(
+                str(row)
+            ),
+            True,
+        )
         arcpy.AddWarning(
-            "Could not get row fields for the following input {0}, returned an empty list.".format(str(row)))
+            "Could not get row fields for the following input {0}, returned an empty list.".format(
+                str(row)
+            )
+        )
         new_row = []
         return new_row
 
@@ -249,33 +309,48 @@ def line_length(row, field, constant_len, f_dict, print_bool=False):
         return abs(row[f_dict[field]])
     else:
         if print_bool:
-            arc_print("Using size input value to create same sized output geometries.", True)
+            arc_print(
+                "Using size input value to create same sized output geometries.", True
+            )
         return abs(constant_len)
 
 
-def get_fields(feature_class, excluded_tolkens=["OID", "Geometry"], excluded_fields=["shape_area", "shape_length"]):
+def get_fields(
+    feature_class,
+    excluded_tolkens=["OID", "Geometry"],
+    excluded_fields=["shape_area", "shape_length"],
+):
     """Get all field names from an incoming feature class defaulting to excluding tolkens and shape area & length.
     :param - feature_class - Feature class
     :param - excluded_tolkens - list excluding tokens list,
     :param - excluded_fields -  excluded fields list.
-    :return - List of field names from input feature class. """
+    :return - List of field names from input feature class."""
     try:
         try:  # If  A feature Class split to game name
             fcName = os.path.split(feature_class)[1]
         except:  # If a Feature Layer, just print the Layer Name
             fcName = feature_class
-        field_list = [f.name for f in arcpy.ListFields(feature_class) if f.type not in excluded_tolkens
-                      and f.name.lower() not in excluded_fields]
-        arc_print("The field list for {0} is:{1}".format(str(fcName), str(field_list)), True)
+        field_list = [
+            f.name
+            for f in arcpy.ListFields(feature_class)
+            if f.type not in excluded_tolkens and f.name.lower() not in excluded_fields
+        ]
+        arc_print(
+            "The field list for {0} is:{1}".format(str(fcName), str(field_list)), True
+        )
         return field_list
     except:
         arc_print(
             "Could not get fields for the following input {0}, returned an empty list.".format(
-                str(feature_class)),
-            True)
+                str(feature_class)
+            ),
+            True,
+        )
         arcpy.AddWarning(
             "Could not get fields for the following input {0}, returned an empty list.".format(
-                str(feature_class)))
+                str(feature_class)
+            )
+        )
         field_list = []
         return field_list
 
@@ -316,6 +391,7 @@ def convert_to_azimuth(angle):
         azimuth_angles % 360
     return azimuth_angles
 
+
 def arc_calculate_segment_bearing(shape_obj, method="GEODESIC"):
     """Calculate the bearing from a single shape object and return the angle.
     @param - shape object from arcpy for a polyline. Uses Arc methods.
@@ -325,6 +401,7 @@ def arc_calculate_segment_bearing(shape_obj, method="GEODESIC"):
     last_point = arcpy.PointGeometry(shape_obj.lastPoint, sr)
     angle, dist = first_point.angleAndDistanceTo(last_point, method)
     return angle
+
 
 def calculate_segment_bearing(shape_obj):
     """Calculate the bearing from a single shape object and return the angle. Assumes projected coords.
@@ -338,15 +415,16 @@ def calculate_segment_bearing(shape_obj):
     last_y = last_point.Y
     dx = last_x - first_x
     dy = last_y - first_y
-    rads = math.atan2(dy, dx) # Relative to North
+    rads = math.atan2(dy, dx)  # Relative to North
     angle = math.degrees(rads)
     return angle
 
+
 def calculate_line_bearing(in_fc, field, convert_azimuth=False):
     """Adds a new field and update it to provide a line bearing in degrees.
-     @param - in_fc - input feature class to add bear
-     @param - field - new field to add bearing
-     @param - convert_azimuth - convert the bearing from 0 to 360 degrees"""
+    @param - in_fc - input feature class to add bear
+    @param - field - new field to add bearing
+    @param - convert_azimuth - convert the bearing from 0 to 360 degrees"""
     add_new_field(in_fc, field, "DOUBLE")
     return_oid_bearing_dict = {}
     sr_type = arcpy.Describe(in_fc).spatialReference.type
@@ -357,7 +435,9 @@ def calculate_line_bearing(in_fc, field, convert_azimuth=False):
             if sr_type == "Geographic":
                 angle = arc_calculate_segment_bearing(shape)
             else:
-                angle = calculate_segment_bearing(shape) #TODO speed test - use planar method vs. this.
+                angle = calculate_segment_bearing(
+                    shape
+                )  # TODO speed test - use planar method vs. this.
             if convert_azimuth:
                 angle = convert_to_azimuth(angle)
             row[2] = angle
@@ -368,18 +448,22 @@ def calculate_line_bearing(in_fc, field, convert_azimuth=False):
     return return_oid_bearing_dict
 
 
-def find_smallest_angle_from_intersecting_lines(angle_1, angle_2, angle_1_inverse=None, angle_2_inverse=None):
+def find_smallest_angle_from_intersecting_lines(
+    angle_1, angle_2, angle_1_inverse=None, angle_2_inverse=None
+):
     """Given two angles indicating a lines orientation, this function will determine the inverse versions of their angles, and
     test every combination of angle to determine the smallest possible angle between them.
     @:param - angle_1 - first angle of a line bearing of unknown orientation. Assumes azimuth angle 0-360 degrees.
     @:param - angle_2 - second angle of a line bearing of unknown orientation. Assumes azimuth angle 0-360 degrees.
     @:param - angle_1_inverse - inverse angle of angle_1- if not provided, is derived.
-    @:param - angle_2_inverse- inverse angle of angle_2- if not provided, is derived. """
+    @:param - angle_2_inverse- inverse angle of angle_2- if not provided, is derived."""
     if angle_1_inverse is None:
         angle_1_inverse = (angle_1 + 180) % 360
     if angle_2_inverse is None:
         angle_2_inverse = (angle_2 + 180) % 360
-    angle_combinations = itertools.combinations([angle_1, angle_2, angle_1_inverse, angle_2_inverse], 2)
+    angle_combinations = itertools.combinations(
+        [angle_1, angle_2, angle_1_inverse, angle_2_inverse], 2
+    )
     smallest_angle = None
     for angle_1, angle_2 in angle_combinations:
         small_angle = find_smallest_angle(angle_1, angle_2, True)
@@ -390,8 +474,13 @@ def find_smallest_angle_from_intersecting_lines(angle_1, angle_2, angle_1_invers
     return smallest_angle
 
 
-def find_smallest_angle_column(df, bearing_column_1, bearing_column_2, new_field_prexix="Inverted_",
-                               new_column="Smallest_Angle"):
+def find_smallest_angle_column(
+    df,
+    bearing_column_1,
+    bearing_column_2,
+    new_field_prexix="Inverted_",
+    new_column="Smallest_Angle",
+):
     """Add a column to pandas dataframe that takes a 0 to 360 degree azimuth angle and adds its inverse.
     @:param - df - a pandas dataframe
     @:param - bearing_column_1 - column in dataframe with the angle the line is pointing
@@ -402,25 +491,34 @@ def find_smallest_angle_column(df, bearing_column_1, bearing_column_2, new_field
     inverted_col_2 = str(new_field_prexix) + bearing_column_2
     df[inverted_col_1] = (df[bearing_column_1] + 180).mod(360)
     df[inverted_col_2] = (df[bearing_column_2] + 180).mod(360)
-    df[new_column] = df.apply(lambda x: find_smallest_angle_from_intersecting_lines(
-        x[bearing_column_1], x[bearing_column_2], x[inverted_col_1], x[inverted_col_2]
-    ), axis=1)
+    df[new_column] = df.apply(
+        lambda x: find_smallest_angle_from_intersecting_lines(
+            x[bearing_column_1],
+            x[bearing_column_2],
+            x[inverted_col_1],
+            x[inverted_col_2],
+        ),
+        axis=1,
+    )
     return df
+
 
 def get_angle_difference(angle, difference=90):
     """Given an azimuth angle (0-360), it will return the two azimuth angles (0-360) as a tuple that are perpendicular to it."""
     angle_lower, angle_higher = (angle + difference) % 360, (angle - difference) % 360
     return (angle_lower, angle_higher)
 
+
 def translate_point(point, angle, radius, is_degree=True):
     """Passed a point object (arcpy) this funciton will translate it and
-     return a modified clone based on a given angle out a set radius."""
+    return a modified clone based on a given angle out a set radius."""
     if is_degree:
         angle = math.radians(angle)
     new_x = math.cos(angle) * radius + point.X
     new_y = math.sin(angle) * radius + point.Y
     new_point = arcpy.Point(new_x, new_y)
     return new_point
+
 
 def sample_line_from_center(polyline, length_to_sample):
     """Takes a polyline and samples it a target length using the segmentAlongLine method."""
@@ -434,15 +532,19 @@ def sample_line_from_center(polyline, length_to_sample):
     segment_returned = polyline.segmentAlongLine(start_point, end_point)
     return segment_returned
 
+
 def generate_whisker_from_polyline(linegeometry, whisker_width):
     """This function will take an ArcPolyline and a target whisker width,and it will create a new line from the
-    lines centroid (or label point) that is perpendicular to the bearing of the current polyline. """
+    lines centroid (or label point) that is perpendicular to the bearing of the current polyline.
+    """
     segment_returned = None
     center = linegeometry.centroid
     sr = linegeometry.spatialReference
     line_heading = arc_calculate_segment_bearing(linegeometry)
     line_heading = convert_to_azimuth(line_heading)
-    perpendicular_angle_start, perpendicular_angle_end = get_angle_difference(line_heading)
+    perpendicular_angle_start, perpendicular_angle_end = get_angle_difference(
+        line_heading
+    )
     point_start = translate_point(center, perpendicular_angle_start, whisker_width)
     point_end = translate_point(center, perpendicular_angle_end, whisker_width)
     inputs_line = arcpy.Array([point_start, point_end])
@@ -450,9 +552,12 @@ def generate_whisker_from_polyline(linegeometry, whisker_width):
     # This function fails if the line is shorter than the pull value, in this case no geometry is returned.
     return segment_returned
 
-def split_segment_by_length(linegeometry,split_value,overlap_percentage = 0, best_fit_bool=True):
+
+def split_segment_by_length(
+    linegeometry, split_value, overlap_percentage=0, best_fit_bool=True
+):
     """This function will take an ArcPolyline, a split value of a target length for a split segment, and
-    boolean that determines if the lines split are the best of fit based on the length. 
+    boolean that determines if the lines split are the best of fit based on the length.
     Parameters
     ----------------
     linegeometry - arc polyline
@@ -472,15 +577,32 @@ def split_segment_by_length(linegeometry,split_value,overlap_percentage = 0, bes
         segment_total = segmentation_value
         percent_split = True
     for line_seg_index in range(0, segment_total):
-        line_seg_index_start = line_seg_index if overlap_percentage == 0  else max([0,float(line_seg_index)-float(overlap_percentage)])
-        start_position = (line_seg_index_start * float(split_value)) if not percent_split else (line_seg_index_start / float(segmentation_value))
-        line_seg_index_end = line_seg_index if overlap_percentage == 0  else min([segment_total,float(line_seg_index)+float(overlap_percentage)])
-        end_position = ((line_seg_index_end+ 1) * float(split_value)) if not percent_split else ((line_seg_index_end +1) / float(segmentation_value))
+        line_seg_index_start = (
+            line_seg_index
+            if overlap_percentage == 0
+            else max([0, float(line_seg_index) - float(overlap_percentage)])
+        )
+        start_position = (
+            (line_seg_index_start * float(split_value))
+            if not percent_split
+            else (line_seg_index_start / float(segmentation_value))
+        )
+        line_seg_index_end = (
+            line_seg_index
+            if overlap_percentage == 0
+            else min([segment_total, float(line_seg_index) + float(overlap_percentage)])
+        )
+        end_position = (
+            ((line_seg_index_end + 1) * float(split_value))
+            if not percent_split
+            else ((line_seg_index_end + 1) / float(segmentation_value))
+        )
         seg = linegeometry.segmentAlongLine(start_position, end_position, percent_split)
         segment_list.append(seg)
     return segment_list
 
-def split_segment_by_count(linegeometry,split_count,overlap_percentage=0.0):
+
+def split_segment_by_count(linegeometry, split_count, overlap_percentage=0.0):
     """This function will take an ArcPolyline, a split count for the number of lines to return. The function returns a list of
     line geometries whose length and number are determined by the split value, split method, and best fit settings.
     Parameters
@@ -493,18 +615,33 @@ def split_segment_by_count(linegeometry,split_count,overlap_percentage=0.0):
     segment_list = []
     segmentation_value = int(round(max([1, split_count])))
     for line_seg_index in range(0, segmentation_value):
-        line_seg_index_start = line_seg_index if overlap_percentage == 0  else max([0,float(line_seg_index)-float(overlap_percentage)])
-        line_seg_index_end = line_seg_index if overlap_percentage == 0  else min([segmentation_value,float(line_seg_index)+float(overlap_percentage)])
-        seg = linegeometry.segmentAlongLine((line_seg_index_start / float(segmentation_value)),
-                                                ((line_seg_index_end+ 1) / float(segmentation_value)), True)
+        line_seg_index_start = (
+            line_seg_index
+            if overlap_percentage == 0
+            else max([0, float(line_seg_index) - float(overlap_percentage)])
+        )
+        line_seg_index_end = (
+            line_seg_index
+            if overlap_percentage == 0
+            else min(
+                [segmentation_value, float(line_seg_index) + float(overlap_percentage)]
+            )
+        )
+        seg = linegeometry.segmentAlongLine(
+            (line_seg_index_start / float(segmentation_value)),
+            ((line_seg_index_end + 1) / float(segmentation_value)),
+            True,
+        )
         segment_list.append(seg)
     return segment_list
+
+
 # End do_analysis function
 
 # This test allows the script to be used from the operating
 # system command prompt (stand-alone), in a Python IDE,
 # as a geoprocessing script tool, or as a module imported in
 # another script
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Define input parameters
     print("Function library: linelibrary.py")

@@ -28,6 +28,7 @@ import linelibrary as fll
 
 # Function Definitions
 
+
 @fll.arc_tool_report
 def get_line_ends(linegeometry, pull_value, percentage=False):
     """This function will take an ArcPolyline and a pull value. The function returns
@@ -43,8 +44,12 @@ def get_line_ends(linegeometry, pull_value, percentage=False):
     try:
         end_point_start_position = line_length - pull_value
         start_point_start_position = 0 + pull_value
-        start_segment = linegeometry.segmentAlongLine(start_point_start_position, start_point_end_position, percentage)
-        end_segment = linegeometry.segmentAlongLine(end_point_start_position, end_point_end_position, percentage)
+        start_segment = linegeometry.segmentAlongLine(
+            start_point_start_position, start_point_end_position, percentage
+        )
+        end_segment = linegeometry.segmentAlongLine(
+            end_point_start_position, end_point_end_position, percentage
+        )
     except:  # This function fails if the line is shorter than the pull value, in this case no geometry is returned.
         return None, None
     return start_segment, end_segment
@@ -66,16 +71,25 @@ def feature_line_roll(in_fc, extension_distance, end_sampling_percentage, out_fc
         OutWorkspace = os.path.split(out_fc)[0]
         FileName = os.path.split(out_fc)[1]
         fll.arc_print("Creating new feature class for lines...")
-        arcpy.CreateFeatureclass_management(OutWorkspace, FileName, "POLYLINE", in_fc, spatial_reference=in_fc,
-                                            has_m="SAME_AS_TEMPLATE", has_z="SAME_AS_TEMPLATE")
+        arcpy.CreateFeatureclass_management(
+            OutWorkspace,
+            FileName,
+            "POLYLINE",
+            in_fc,
+            spatial_reference=in_fc,
+            has_m="SAME_AS_TEMPLATE",
+            has_z="SAME_AS_TEMPLATE",
+        )
         preFields = fll.get_fields(in_fc)
         fields = ["SHAPE@"] + preFields
         cursor = arcpy.da.SearchCursor(in_fc, fields)
         f_dict = fll.construct_index_dict(fields)
         sr = arcpy.Describe(in_fc).spatialReference
-        is_projected = sr.type =="Projected"
+        is_projected = sr.type == "Projected"
         if not is_projected:
-            arcpy.AddWarning("This tool works best on a projected coordinate system. Please reprojected for best results.")
+            arcpy.AddWarning(
+                "This tool works best on a projected coordinate system. Please reprojected for best results."
+            )
         fll.arc_print("Extending lines based on heading calculations...")
         with arcpy.da.InsertCursor(out_fc, fields) as insertCursor:
             lineCounter = 0
@@ -86,14 +100,24 @@ def feature_line_roll(in_fc, extension_distance, end_sampling_percentage, out_fc
                     lineCounter += 1
                     linegeo = singleline[f_dict["SHAPE@"]]
                     # Function splits line geometry based on method and split value
-                    start_seg, end_seg = get_line_ends(linegeo, float(end_sampling_percentage), True)
+                    start_seg, end_seg = get_line_ends(
+                        linegeo, float(end_sampling_percentage), True
+                    )
                     method = "PLANAR" if is_projected else "GEODESIC"
-                    start_bearing  = fll.convert_to_azimuth(fll.calculate_segment_bearing(start_seg))
-                    end_bearing = fll.convert_to_azimuth(fll.calculate_segment_bearing(end_seg))
+                    start_bearing = fll.convert_to_azimuth(
+                        fll.calculate_segment_bearing(start_seg)
+                    )
+                    end_bearing = fll.convert_to_azimuth(
+                        fll.calculate_segment_bearing(end_seg)
+                    )
                     start_start_pt = arcpy.PointGeometry(start_seg.firstPoint, sr)
                     end_end_pt = arcpy.PointGeometry(end_seg.lastPoint, sr)
-                    new_start_end_pt = start_start_pt.pointFromAngleAndDistance(start_bearing, extension_distance, method)
-                    new_end_end_pt = end_end_pt.pointFromAngleAndDistance(end_bearing, extension_distance, method)
+                    new_start_end_pt = start_start_pt.pointFromAngleAndDistance(
+                        start_bearing, extension_distance, method
+                    )
+                    new_end_end_pt = end_end_pt.pointFromAngleAndDistance(
+                        end_bearing, extension_distance, method
+                    )
                     segID = 0
                     part_number = 0
                     all_parts = []
@@ -111,10 +135,17 @@ def feature_line_roll(in_fc, extension_distance, end_sampling_percentage, out_fc
                     all_parts[-1].append(new_end_end_pt.getPart(0))
                     all_pt_array = arcpy.Array(all_parts)
                     new_line = arcpy.Polyline(all_pt_array, sr)
-                    row = fll.copy_altered_row(singleline, fields, f_dict, {"SHAPE@": new_line})
+                    row = fll.copy_altered_row(
+                        singleline, fields, f_dict, {"SHAPE@": new_line}
+                    )
                     insertCursor.insertRow(row)
                     if lineCounter % 500 == 0:
-                        fll.arc_print("Iterated through and extend feature " + str(lineCounter) + ".", True)
+                        fll.arc_print(
+                            "Iterated through and extend feature "
+                            + str(lineCounter)
+                            + ".",
+                            True,
+                        )
                 except Exception as e:
                     fll.arc_print("Failed to iterate through features.", True)
                     fll.arc_print(e.args[0])
@@ -131,12 +162,13 @@ def feature_line_roll(in_fc, extension_distance, end_sampling_percentage, out_fc
 # system command prompt (stand-alone), in a Python IDE,
 # as a geoprocessing script tool, or as a module imported in
 # another script
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Define Inputs
 
     FeatureClass = arcpy.GetParameterAsText(0)
     ExtensionDistance = float(arcpy.GetParameter(1))
     EndSamplingPercentage = float(arcpy.GetParameter(2))
     OutFeatureClass = arcpy.GetParameterAsText(3)
-    feature_line_roll(FeatureClass, ExtensionDistance,
-                      EndSamplingPercentage, OutFeatureClass)
+    feature_line_roll(
+        FeatureClass, ExtensionDistance, EndSamplingPercentage, OutFeatureClass
+    )

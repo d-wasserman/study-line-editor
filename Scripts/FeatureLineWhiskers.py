@@ -29,7 +29,9 @@ import linelibrary as fll
 # Function Definitions
 
 
-def feature_line_whisker(in_fc, out_whisker_width, out_whisker_field, sample_length, out_fc):
+def feature_line_whisker(
+    in_fc, out_whisker_width, out_whisker_field, sample_length, out_fc
+):
     """Take a feature class and generate "whiskers" that are perpendicular either to the lines start and end points, or
     a sample line extracted from the center portion of the input polyline feature.
      This version of the tool will join the original fields.
@@ -44,13 +46,20 @@ def feature_line_whisker(in_fc, out_whisker_width, out_whisker_field, sample_len
       generate the whiskers. This parameter defines the portion of the line used for whisker generation.
     out_fc (FeatureClass): The output feature class where the geometries with whiskers will be saved. This feature class
       will include the original attribute fields from in_fc, along with the new out_whisker_field.
-"""
+    """
     try:
         arcpy.env.overwriteOutput = True
         OutWorkspace = os.path.split(out_fc)[0]
         FileName = os.path.split(out_fc)[1]
-        arcpy.CreateFeatureclass_management(OutWorkspace, FileName, "POLYLINE", in_fc, spatial_reference=in_fc,
-                                            has_m="SAME_AS_TEMPLATE", has_z="SAME_AS_TEMPLATE")
+        arcpy.CreateFeatureclass_management(
+            OutWorkspace,
+            FileName,
+            "POLYLINE",
+            in_fc,
+            spatial_reference=in_fc,
+            has_m="SAME_AS_TEMPLATE",
+            has_z="SAME_AS_TEMPLATE",
+        )
         preFields = fll.get_fields(in_fc)
         fields = ["SHAPE@"] + preFields
         cursor = arcpy.da.SearchCursor(in_fc, fields)
@@ -66,29 +75,44 @@ def feature_line_whisker(in_fc, out_whisker_width, out_whisker_field, sample_len
                     # Function splits linegeometry based on method and split value
                     if sample_length:
                         linegeo = fll.sample_line_from_center(linegeo, sample_length)
-                    line_length = fll.line_length(singleline,
-                                                  out_whisker_field,
-                                                  out_whisker_width,
-                                                  f_dict)
-                    split_segment_geometry = fll.generate_whisker_from_polyline(linegeo, line_length)
+                    line_length = fll.line_length(
+                        singleline, out_whisker_field, out_whisker_width, f_dict
+                    )
+                    split_segment_geometry = fll.generate_whisker_from_polyline(
+                        linegeo, line_length
+                    )
                     segID = 0
                     try:
                         segID += 1
-                        segmentedRow = fll.copy_altered_row(singleline, fields, f_dict,
-                                                            {"SHAPE@": split_segment_geometry})
+                        segmentedRow = fll.copy_altered_row(
+                            singleline,
+                            fields,
+                            f_dict,
+                            {"SHAPE@": split_segment_geometry},
+                        )
                         segment_rows.append(segmentedRow)
                     except:
-                        fll.arc_print("Could not iterate through line segment " + str(segID) + ".")
+                        fll.arc_print(
+                            "Could not iterate through line segment " + str(segID) + "."
+                        )
                         break
 
                     for row in segment_rows:
                         insertCursor.insertRow(row)
                     if lineCounter % 500 == 0:
-                        fll.arc_print("Iterated and generated whiskers for feature " + str(lineCounter) + ".", True)
+                        fll.arc_print(
+                            "Iterated and generated whiskers for feature "
+                            + str(lineCounter)
+                            + ".",
+                            True,
+                        )
                 except Exception as e:
                     fll.arc_print(
-                        "Failed to iterate through and generated whiskers for feature " + str(lineCounter) + ".",
-                        True)
+                        "Failed to iterate through and generated whiskers for feature "
+                        + str(lineCounter)
+                        + ".",
+                        True,
+                    )
                     fll.arc_print(e.args[0])
             del cursor, insertCursor, fields, preFields, OutWorkspace, lineCounter
             fll.arc_print("Script Completed Successfully.", True)
@@ -104,12 +128,17 @@ def feature_line_whisker(in_fc, out_whisker_width, out_whisker_field, sample_len
 # system command prompt (stand-alone), in a Python IDE,
 # as a geoprocessing script tool, or as a module imported in
 # another script
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Define Inputs
     FeatureClass = arcpy.GetParameterAsText(0)
     Desired_Whisker_Width = arcpy.GetParameter(1)
     Feature_Whisker_Field = arcpy.GetParameterAsText(2)
     Line_Sample_Length = arcpy.GetParameterAsText(3)
     OutFeatureClass = arcpy.GetParameterAsText(4)
-    feature_line_whisker(FeatureClass, float(Desired_Whisker_Width), Feature_Whisker_Field, float(Line_Sample_Length),
-                         OutFeatureClass)
+    feature_line_whisker(
+        FeatureClass,
+        float(Desired_Whisker_Width),
+        Feature_Whisker_Field,
+        float(Line_Sample_Length),
+        OutFeatureClass,
+    )

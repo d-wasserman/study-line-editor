@@ -22,9 +22,11 @@
 # limitations under the License.
 # --------------------------------
 # Import Modules
-import os, arcpy
-import linelibrary as fll
+import os
 
+import arcpy
+
+import linelibrary as fll
 
 # Function Definitions
 

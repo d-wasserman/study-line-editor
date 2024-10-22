@@ -22,11 +22,12 @@
 # limitations under the License.
 # --------------------------------
 
-# Import Modules
-import arcpy
-import os
 import itertools
 import math
+import os
+
+# Import Modules
+import arcpy
 
 try:
     import pandas as pd

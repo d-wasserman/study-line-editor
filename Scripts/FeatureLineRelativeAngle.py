@@ -22,11 +22,14 @@
 # limitations under the License.
 # --------------------------------
 # Import Modules
-import os, arcpy, math
+import math
+import os
+
+import arcpy
 import numpy as np
 import pandas as pd
-import linelibrary as fll
 
+import linelibrary as fll
 
 # Function Definitions
 

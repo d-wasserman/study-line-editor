@@ -50,9 +50,9 @@ def create_gap_filling_lines(
     ll.arc_print("Feature class validation...")
     arcpy.env.overwriteOutput = True
     oid = arcpy.Describe(input_line_features).OIDFieldName
-    workspace = "in_memory"
+    workspace = "memory"
     pt_id, ln_id = "PT_ID", "LINE_ID"
-    workspace, output_fc_name = os.path.split(output_feature_class)
+    out_workspace, output_fc_name = os.path.split(output_feature_class)
     arcpy.AddField_management(input_line_features, ln_id, "LONG")
     arcpy.CalculateField_management(
         input_line_features, ln_id, "!{0}!".format(oid), "PYTHON3"
@@ -119,7 +119,7 @@ def create_gap_filling_lines(
 
     ll.arc_print("Create the output feature class...")
     arcpy.CreateFeatureclass_management(
-        workspace, output_fc_name, "POLYLINE", spatial_reference=input_line_features
+        out_workspace, output_fc_name, "POLYLINE", spatial_reference=input_line_features
     )
     ll.arc_print("Adding new fields to output...")
     a_nd, b_nd = "A_NODE", "B_NODE"

@@ -2,7 +2,7 @@
 # Purpose: Take a feature class and proportionally split each unique feature line into segments of a target count
 # or target distance. Similar to editing tools done manually.This version of the tool will join the original fields
 # of the old feature class. This tool also has the ability to split a line so that it includes a percentage overlap
-# with other segments based
+# with other segments based on an original segmentation. 
 # Author: David Wasserman
 # Last Modified: 3/8/2023
 # Copyright: David Wasserman

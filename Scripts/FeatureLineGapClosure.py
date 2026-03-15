@@ -46,7 +46,6 @@ def create_gap_filling_lines(
     - search_radius (LinearUnit): The search radius within which to identify the closest end points for gap filling.
     - connection_count(int): The number of connections to create between end points in the order of proximity.
     """
-    # try:
     ll.arc_print("Feature class validation...")
     arcpy.env.overwriteOutput = True
     oid = arcpy.Describe(input_line_features).OIDFieldName
@@ -108,7 +107,6 @@ def create_gap_filling_lines(
     groups = sm_df.groupby(pt_id)
     line_dict = {pt_id: group[ln_id].values[0] for pt_id, group in groups}
 
-    # ll.arc_print(line_dict)
     filtered_near_table = [
         row
         for row in arcpy.da.SearchCursor(
@@ -137,7 +135,6 @@ def create_gap_filling_lines(
     ab_nd_tdf = [
         sub[item] for item in range(len(b_nd_tf)) for sub in [a_nd_tf, b_nd_tf]
     ]
-    # ab_dict = {i:["A_"+str(i),"B_"+str(i)] for i in transfer_fields }
     output_fields = ["SHAPE@", a_nd, b_nd]
     if ab_nd_tdf:
         output_fields = ["SHAPE@", a_nd, b_nd] + ab_nd_tdf
@@ -163,9 +160,6 @@ def create_gap_filling_lines(
             count_hash[row[0]] += 1
 
         ll.arc_print("Gap filling lines created successfully.")
-
-    # except Exception as e:
-    #     arcpy.AddError(str(e))
 
 
 if __name__ == "__main__":

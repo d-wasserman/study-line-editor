@@ -1,7 +1,6 @@
 # Name: FeatureLineWhiskers.py
-# Purpose: This tool will transform a polyline feature class into "whiskers" or line features at the centroid of
-# the line that are perpendicular to the lines start and end points.
-# of the old feature class.
+# Purpose: This tool will transform a polyline feature class into "whiskers" — perpendicular line features
+# generated at the centroid of each input line based on its sampled heading.
 # Author: David Wasserman
 # Last Modified: 10/20/2019
 # Copyright: David Wasserman
@@ -72,7 +71,7 @@ def feature_line_whisker(
                     segment_rows = []
                     lineCounter += 1
                     linegeo = singleline[f_dict["SHAPE@"]]
-                    # Function splits linegeometry based on method and split value
+                    # If sample_length is set, sample the center of the line to improve bearing accuracy
                     if sample_length:
                         linegeo = fll.sample_line_from_center(linegeo, sample_length)
                     line_length = fll.line_length(

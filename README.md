@@ -1,5 +1,5 @@
-# Toolbox Summary
-This repository holds a collection of easy to use ArcGIS Geoprocessing scripts (10.3+ and Pro) intended to provide automated line editing routines to help create useful study geometries. The tools are described below. 
+# Study Line Editor
+This repository holds a collection of ArcGIS Geoprocessing scripts (10.3+ and Pro) intended to provide automated line editing routines for creating useful study geometries. The tools are described below.
 
 * Feature Line Split - create a new feature class that has input lines split into an arbitrary number of segments. 
 
@@ -17,7 +17,7 @@ If you use the tool in academic research or as part of professional reports, ple
 
 Wasserman, D. Study Line Editor. (2019) GitHub repository, GitHub https://github.com/d-wasserman/study-line-editor. 
 
-It is polite to cite. 
+Please cite if using this tool in published work.
 
 In depth descriptions, are provided below. 
 
@@ -209,7 +209,7 @@ Works in ArcGIS Pro (2to3 compatible)
 <tr>
 <td class="info">Input_Feature_Line</td>
 <td class="info" align="left">
-<span style="font-weight: bold">Dialog Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><DIV><P><SPAN>This is the input feature class whose individual geometry features will be pulled back and put into a new feature class. The input can only be a polyline for this tool, because it uses Polyline specific methods. </SPAN></P></DIV></DIV></DIV><div class="noContent" style="text-align:center; margin-top: -1em">___________________</div><br />
+<span style="font-weight: bold">Dialog Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><DIV><P><SPAN>This is the input feature class whose individual geometry features will be used to generate perpendicular whisker lines. The input can only be a polyline for this tool, because it uses Polyline specific methods. </SPAN></P></DIV></DIV></DIV><div class="noContent" style="text-align:center; margin-top: -1em">___________________</div><br />
 <span style="font-weight: bold">Python Reference</span><br /><DIV STYLE="text-align:Left;"><DIV><DIV><P><SPAN>This tool depends on the segmentAlongLine method in ArcGIS 10.3.</SPAN></P></DIV></DIV></DIV></td>
 <td class="info" align="left">Feature Layer</td>
 </tr>
@@ -248,16 +248,16 @@ Works in ArcGIS Pro (2to3 compatible)
 This tool will construct a near table to construct a relationship table between lines. It will using the bearing of lines and their corresponding relationships to generate corridor ids consisting of all parallel line features within the threshold that are connected to each other. 
 
 <b>Usage</b>
- 
-This tool will construct a near table to construct a relationship table between lines. It will using the bearing of lines and their corresponding relationships to generate corridor ids consisting of all parallel line features within the threshold that are connected to each other. The intended uses for this are: 
 
-* Aid in the creation of study segments to summarize data on for linear networks. 
+The goal of this tool is to identify and label parallel, spatially connected line features as belonging to the same corridor. The intended uses for this are:
 
-* Provide a tool to generate corridors for study and data summarization that does not depend on arbitrary street names or functional class attributes. 
+* Aid in the creation of study segments to summarize data on for linear networks.
 
-* Provide a tool for batch editing and segmentation of polylines.
+* Generate corridor IDs for study and data summarization without relying on arbitrary street names or functional class attributes.
 
-Works in ArcGIS Pro (2to3 compatible). This tool requires the pandas library to work. 
+* Dissolve a line network into its constituent corridors for further analysis.
+
+Works in ArcGIS Pro (2to3 compatible). This tool requires the pandas library to work.
 
 <b>Parameters</b>
 
@@ -323,7 +323,7 @@ The goal of this script  is to enable linear rolling windows through the extensi
 
 * Provide a tool to assist with Vision Zero and related safety analysis. 
 
-Works in ArcGIS Pro. This tool requires the pandas library to work. 
+Works in ArcGIS Pro.
 
 <b>Parameters</b>
 

@@ -1,7 +1,6 @@
 # Name: FeatureLinePull.py
 # Purpose: Take a feature class and pull back a line equal to a target distance from either a start or end point
-# position. This version of the tool will join the original fields.
-# of the old feature class.
+# position. This version of the tool will carry over the original fields of the input feature class.
 # Author: David Wasserman
 # Last Modified: 10/20/2019
 # Copyright: David Wasserman
@@ -65,7 +64,7 @@ def pull_line_geometry(
             segment_returned = linegeometry.segmentAlongLine(
                 start_point_start_position, end_point_start_position
             )
-    except:  # Should the function failr, return null geometry.
+    except Exception:  # If the function fails, return null geometry.
         return None
     return segment_returned
 
@@ -110,7 +109,7 @@ def feature_line_pull(
                     segment_rows = []
                     lineCounter += 1
                     linegeo = singleline[f_dict["SHAPE@"]]
-                    # Function splits linegeometry based on method and split value
+                    # Function retracts line geometry endpoints by the pull value
                     split_segment_geometry = pull_line_geometry(
                         linegeo,
                         fll.line_length(
@@ -121,7 +120,8 @@ def feature_line_pull(
                     )
                     if split_segment_geometry is None:
                         null_counter += 1
-                        # continue - # Uncomment to skip null geometries, otherwise empty geometries will be inserted.
+                        # Uncomment the next line to skip null geometries; by default empty geometries are inserted.
+                        # continue
                     segID = 0
                     try:
                         segID += 1
@@ -166,8 +166,6 @@ def feature_line_pull(
         fll.arc_print(arcpy.GetMessages(2))
     except Exception as e:
         fll.arc_print(e.args[0])
-
-        # End do_analysis function
 
 
 # This test allows the script to be used from the operating

@@ -171,8 +171,6 @@ def feature_line_split(
     except Exception as e:
         fll.arc_print(e.args[0])
 
-        # End do_analysis function
-
 
 # This test allows the script to be used from the operating
 # system command prompt (stand-alone), in a Python IDE,

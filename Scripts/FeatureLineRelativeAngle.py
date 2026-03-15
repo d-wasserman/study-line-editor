@@ -1,7 +1,7 @@
 # Name: FeatureLineRelativeAngle.py
-# Purpose: This tool will take in target line file and a reference line file and find the smallest relative angle between all reference lines and the target lines.
-# This tool has an optional threshold that can be set to identify all facilities that are parallel (within the threshold) to the target corridors.
-# of the old feature class.
+# Purpose: This tool will take a target line feature class and a reference line feature class and find the smallest
+# relative angle between each reference line and the nearest target lines within a search radius.
+# An optional threshold can be set to flag reference lines that are parallel (within the threshold) to the target corridors.
 # Author: David Wasserman
 # Last Modified: 2/19/2024
 # Copyright: David Wasserman
@@ -52,7 +52,6 @@ def feature_line_relative_angle(
     ---------------------
     target_lines_fc (FeatureClass): The input feature class containing the target line geometries for comparison to reference lines.
     reference_lines_fc (FeatureClass): The input feature class containing the reference line geometries to compare against the target lines.
-        This is the output feature class with new attributes added including the releative angle to the target, and whether it is parallel.
     search_radius (LinearUnit): The search radius within which the tool will look for reference lines relative to each target line.
     angle_threshold (float): An optional angle threshold (in degrees) to identify lines that are nearly parallel to the target lines.
                              Lines within this threshold angle from the target lines are tagged with a 1 in a Parallel_Target field.
@@ -152,7 +151,7 @@ def feature_line_relative_angle(
         if use_nearest_point:
             joined_fields.append(near_dist)
         reference_df = reference_df[joined_fields].copy()
-        fll.arc_print("Exporing relative angle results as array.")
+        fll.arc_print("Exporting relative angle results as array.")
         finalStandardArray = reference_df.to_records()
         fll.arc_print("Joining new score fields to feature class.")
         OutOIDFieldName = desc.OIDFieldName
@@ -169,8 +168,6 @@ def feature_line_relative_angle(
         arcpy.AddError(str(arcpy.GetMessages(2)))
     except Exception as e:
         arcpy.AddError(str(e.args[0]))
-
-        # End do_analysis function
 
 
 # This test allows the script to be used from the operating

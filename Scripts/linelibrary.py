@@ -1,6 +1,6 @@
 # --------------------------------
-# Name: featurelinelib.py
-# Purpose: This file serves as a function library for the Feature line Toolboxes. Import as fll.
+# Name: linelibrary.py
+# Purpose: This file serves as a function library for the Feature Line Toolboxes. Import as fll or ll.
 # Current Owner: David Wasserman
 # Last Modified: 8/31/2019
 # Copyright:   David Wasserman
@@ -29,7 +29,7 @@ import itertools
 import math
 try:
     import pandas as pd
-except:
+except ImportError:
     arcpy.AddWarning("Some tools require the Pandas installed in the ArcGIS Python Install."
                    " Might require installing pre-requisite libraries and software.")
 
@@ -220,12 +220,12 @@ def copy_altered_row(row, field_list, field_dict, replacement_dict):
                     new_row.append(replacement_dict[field])
                 else:
                     new_row.append(row[field_dict[field]])
-            except:
+            except Exception:
                 arc_print("Could not replace field {0} with its accepted value. Check field names for match.".format(
                     str(field)), True)
                 new_row.append(None)  # Append a null value where it cannot find a value to the list.
         return new_row
-    except:
+    except Exception:
         arc_print("Could not get row fields for the following input {0}, returned an empty list.".format(str(row)),
                   True)
         arcpy.AddWarning(
@@ -260,15 +260,15 @@ def get_fields(feature_class, excluded_tolkens=["OID", "Geometry"], excluded_fie
     :param - excluded_fields -  excluded fields list.
     :return - List of field names from input feature class. """
     try:
-        try:  # If  A feature Class split to game name
+        try:  # If a feature class, split to get the base name
             fcName = os.path.split(feature_class)[1]
-        except:  # If a Feature Layer, just print the Layer Name
+        except Exception:  # If a feature layer, just use the layer name as-is
             fcName = feature_class
         field_list = [f.name for f in arcpy.ListFields(feature_class) if f.type not in excluded_tolkens
                       and f.name.lower() not in excluded_fields]
         arc_print("The field list for {0} is:{1}".format(str(fcName), str(field_list)), True)
         return field_list
-    except:
+    except Exception:
         arc_print(
             "Could not get fields for the following input {0}, returned an empty list.".format(
                 str(feature_class)),
@@ -305,8 +305,8 @@ def find_smallest_angle(angle1, angle2, absolute_value=False):
 
 
 def convert_to_azimuth(angle):
-    """Converts Near 180 to -180 angles to Azimuth Angles. Will also normalize any number to 0-360 .
-    @param: angle - angle denoted in terms of 180 to -180 degrees
+    """Converts -180 to 180 degree angles to azimuth angles (0-360). Will also normalize any angle to 0-360.
+    @param: angle - angle denoted in terms of -180 to 180 degrees
     @returns angle - angle 0 to 360"""
     if angle <= 180 and angle > 90:
         azimuth_angles = 360.0 - (angle - 90)
@@ -357,7 +357,7 @@ def calculate_line_bearing(in_fc, field, convert_azimuth=False):
             if sr_type == "Geographic":
                 angle = arc_calculate_segment_bearing(shape)
             else:
-                angle = calculate_segment_bearing(shape) #TODO speed test - use planar method vs. this.
+                angle = calculate_segment_bearing(shape)
             if convert_azimuth:
                 angle = convert_to_azimuth(angle)
             row[2] = angle
@@ -447,7 +447,6 @@ def generate_whisker_from_polyline(linegeometry, whisker_width):
     point_end = translate_point(center, perpendicular_angle_end, whisker_width)
     inputs_line = arcpy.Array([point_start, point_end])
     segment_returned = arcpy.Polyline(inputs_line, sr)
-    # This function fails if the line is shorter than the pull value, in this case no geometry is returned.
     return segment_returned
 
 def split_segment_by_length(linegeometry,split_value,overlap_percentage = 0, best_fit_bool=True):
@@ -499,7 +498,6 @@ def split_segment_by_count(linegeometry,split_count,overlap_percentage=0.0):
                                                 ((line_seg_index_end+ 1) / float(segmentation_value)), True)
         segment_list.append(seg)
     return segment_list
-# End do_analysis function
 
 # This test allows the script to be used from the operating
 # system command prompt (stand-alone), in a Python IDE,

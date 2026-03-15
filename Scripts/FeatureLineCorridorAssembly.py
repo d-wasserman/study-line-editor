@@ -58,7 +58,6 @@ def assemble_corridors_from_network(
     desc = arcpy.Describe(output_network)
     oid = desc.OIDFieldName
     line_bearing_df = ll.arcgis_table_to_df(output_network, [bearing_field])
-    line_bearing_df[bearing_field]
     ll.arc_print("Generating near table for parallel analysis...")
     arcpy.GenerateNearTable_analysis(
         output_network,
@@ -104,9 +103,9 @@ def assemble_corridors_from_network(
         "Parallel_Present",
     ]
     angle_results = angle_results.reset_index()
-    # # Create Corridor IDs
-    # Pick a seed line and assemble all parallel connecting lines into a set of unique ids for each
-    # "corridor set". The threshold determines whether an item is parallel or not.
+    # Create Corridor IDs: pick a seed line and assemble all parallel connecting lines
+    # into a set of unique IDs for each "corridor set".
+    # The threshold determines whether an item is parallel or not.
     unique_fids = near_df_w_angle["IN_FID"].unique()
     corridor_ids = {}
     unvisited_fids = []

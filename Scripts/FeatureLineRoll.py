@@ -99,7 +99,7 @@ def feature_line_roll(in_fc, extension_distance, end_sampling_percentage, out_fc
                     segment_rows = []
                     lineCounter += 1
                     linegeo = singleline[f_dict["SHAPE@"]]
-                    # Function splits line geometry based on method and split value
+                    # Sample the start and end segments to calculate extension bearing
                     start_seg, end_seg = get_line_ends(
                         linegeo, float(end_sampling_percentage), True
                     )
